@@ -1,3 +1,9 @@
+.vscode/
+.env
+bin/
+.DS_Store/
+.database/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
