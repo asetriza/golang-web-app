@@ -30,4 +30,4 @@ dockerdown:
 lint:
 	golangci-lint run
 
-deploy: build run
+deploy: build lint dockerup
