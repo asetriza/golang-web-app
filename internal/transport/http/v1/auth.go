@@ -34,13 +34,13 @@ func (h *Handler) signUp(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
 }
 
-type singInInput struct {
+type signInInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 func (h *Handler) signIn(c *gin.Context) {
-	var input singInInput
+	var input signInInput
 
 	if err := c.BindJSON(&input); err != nil {
 		log.Print(err)
