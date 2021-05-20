@@ -1,7 +1,7 @@
 .vscode/
 .env
 bin/
-.DS_Store/
+.DS_Store
 .database/
 
 # Binaries for programs and plugins
