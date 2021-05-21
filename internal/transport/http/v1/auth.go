@@ -13,6 +13,7 @@ func (h *Handler) initAuthRoute(api *gin.RouterGroup) {
 	{
 		auth.POST("/sign-up", h.signUp)
 		auth.POST("/sign-in", h.signIn)
+		auth.POST("/refresh", h.refresh)
 	}
 }
 
@@ -20,7 +21,7 @@ func (h *Handler) signUp(c *gin.Context) {
 	var input common.User
 
 	if err := c.BindJSON(&input); err != nil {
-		log.Print(err)
+		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -43,16 +44,39 @@ func (h *Handler) signIn(c *gin.Context) {
 	var input signInInput
 
 	if err := c.BindJSON(&input); err != nil {
-		log.Print(err)
+		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	token, err := h.Service.Authorization.GenerateToken(input.Username, input.Password)
+	credentials, err := h.Service.Authorization.GenerateCredentials(input.Username, input.Password)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"token": token})
+	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
+}
+
+type refreshInput struct {
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+func (h *Handler) refresh(c *gin.Context) {
+	var input refreshInput
+
+	if err := c.BindJSON(&input); err != nil {
+		log.Println(err)
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	credentials, err := h.Service.Authorization.RefreshCredentials(input.Token, input.RefreshToken)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
 }

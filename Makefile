@@ -3,8 +3,8 @@
 build:
 	env GOOS=darwin go build -ldflags="-s -w" -o bin/main cmd/app/main.go
 
-db:
-	docker run --name=golang-web-app-db -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -p ${POSTGRESQL_PORT}:${POSTGRESQL_PORT} -d --rm postgres
+dbrun:
+	docker run --name=golang-web-app-db -e POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD} -p ${POSTGRESQL_PORT}:${POSTGRESQL_PORT} -d --rm postgres
 
 migrateup:
 	migrate -path ./schema -database '${POSTGRESQL_CONNECTION}' up

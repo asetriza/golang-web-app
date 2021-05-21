@@ -3,6 +3,7 @@ package service
 import (
 	"golang-web-app/internal/common"
 	"golang-web-app/internal/repository"
+	"golang-web-app/pkg/auth"
 )
 
 type User interface {
@@ -11,11 +12,14 @@ type User interface {
 
 type Authorization interface {
 	CreateUser(user common.User) (int, error)
-	GenerateToken(username, password string) (string, error)
+	GenerateCredentials(username, password string) (Credentials, error)
+	RefreshCredentials(token, refreshToken string) (Credentials, error)
 }
 
 type Dependencies struct {
-	Repository *repository.Repository
+	Repository   *repository.Repository
+	TokenManager auth.TokenManager
+	PasswordSalt string
 }
 
 type Service struct {
@@ -25,7 +29,7 @@ type Service struct {
 
 func NewService(deps Dependencies) *Service {
 	return &Service{
-		Authorization: NewAuthorizationService(deps.Repository.Authorization),
+		Authorization: NewAuthorizationService(deps.Repository.Authorization, deps.TokenManager, deps.PasswordSalt),
 		User:          NewUserService(deps.Repository.User),
 	}
 }

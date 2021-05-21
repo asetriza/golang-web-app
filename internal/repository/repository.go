@@ -10,6 +10,9 @@ import (
 type Authorization interface {
 	CreateUser(user common.User) (int, error)
 	GetUser(username, password string) (common.User, error)
+	GetUserSession(userID int, refreshToken string) (common.UserSession, error)
+	CreateUserSession(userID int, refreshToken string, freshTokenTTL int64) (int, error)
+	UpdateUserSession(userID int, refreshToken string, refreshTokenTTL int64) (int, error)
 }
 
 type User interface {

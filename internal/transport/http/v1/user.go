@@ -5,7 +5,7 @@ import (
 )
 
 func (h *Handler) initUserRoute(api *gin.RouterGroup) {
-	user := api.Group("/user")
+	user := api.Group("/user", h.Middleware.Identity)
 	{
 		user.POST("/", h.createUser)
 		user.GET("/", h.getUsers)

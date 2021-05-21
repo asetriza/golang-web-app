@@ -3,17 +3,20 @@ package http
 import (
 	"golang-web-app/internal/service"
 	v1 "golang-web-app/internal/transport/http/v1"
+	"golang-web-app/pkg/auth"
 
 	"github.com/gin-gonic/gin"
 )
 
 type HTTP struct {
-	service *service.Service
+	Service      *service.Service
+	TokenManager auth.TokenManager
 }
 
-func NewHTTP(s *service.Service) *HTTP {
+func NewHTTP(serv *service.Service, tm auth.TokenManager) *HTTP {
 	return &HTTP{
-		service: s,
+		Service:      serv,
+		TokenManager: tm,
 	}
 }
 
@@ -31,7 +34,7 @@ func (h *HTTP) Init() *gin.Engine {
 }
 
 func (h *HTTP) initAPI(router *gin.Engine) {
-	handlerV1 := v1.NewHandler(h.service)
+	handlerV1 := v1.NewHandler(h.Service, h.TokenManager)
 	api := router.Group("/api")
 	{
 		handlerV1.Init(api)
