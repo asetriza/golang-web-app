@@ -30,10 +30,15 @@ func NewAuthorizationService(ra repository.Authorization, tm auth.TokenManager, 
 	}
 }
 
-func (as *AuthorizationService) CreateUser(ctx context.Context, user common.User) (int, error) {
+func (as *AuthorizationService) CreateUser(ctx context.Context, user common.User, userIP string) (Credentials, error) {
 	user.Password = as.generateHash(user.Password)
 
-	return as.Repository.CreateUser(ctx, user)
+	userID, err := as.Repository.CreateUser(ctx, user)
+	if err != nil {
+		return Credentials{}, err
+	}
+
+	return as.createUserSession(ctx, userID, userIP)
 }
 
 func (as *AuthorizationService) generateHash(password string) string {
@@ -43,13 +48,13 @@ func (as *AuthorizationService) generateHash(password string) string {
 	return fmt.Sprintf("%x", hash.Sum([]byte(as.PasswordSalt)))
 }
 
-func (as *AuthorizationService) GenerateCredentials(ctx context.Context, username, password string) (Credentials, error) {
+func (as *AuthorizationService) CreateCredentials(ctx context.Context, username, password, userIP string) (Credentials, error) {
 	user, err := as.Repository.GetUser(ctx, username, as.generateHash(password))
 	if err != nil {
 		return Credentials{}, err
 	}
 
-	return as.createUserSession(ctx, user.ID)
+	return as.updateUserSession(ctx, user.ID)
 }
 
 type Credentials struct {
@@ -57,7 +62,7 @@ type Credentials struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, refreshToken string) (Credentials, error) {
+func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, refreshToken, userIP string) (Credentials, error) {
 	userID, err := as.TokenManager.ParseToken(token)
 	if err != nil {
 		if err.Error() != "Token is expired" {
@@ -72,7 +77,7 @@ func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, r
 		return Credentials{}, err
 	}
 
-	if userSession.RefreshTokenTTL > time.Now().UnixNano() {
+	if userSession.RefreshTokenTTL > time.Now().UnixNano() && userSession.UserIP == userIP {
 		log.Println(RefreshTokenExpired)
 		return Credentials{}, RefreshTokenExpired
 	}
@@ -99,7 +104,7 @@ func (as *AuthorizationService) updateUserSession(ctx context.Context, userID in
 	}, nil
 }
 
-func (as *AuthorizationService) createUserSession(ctx context.Context, userID int) (Credentials, error) {
+func (as *AuthorizationService) createUserSession(ctx context.Context, userID int, userIP string) (Credentials, error) {
 	token, err := as.TokenManager.NewToken(userID)
 	if err != nil {
 		log.Println(err)
@@ -108,7 +113,7 @@ func (as *AuthorizationService) createUserSession(ctx context.Context, userID in
 
 	refreshToken := as.TokenManager.NewRefreshToken()
 	refreshTokenTTL := as.TokenManager.CreateRefreshTokenTTL()
-	if _, err = as.Repository.CreateUserSession(ctx, userID, refreshToken, refreshTokenTTL); err != nil {
+	if _, err = as.Repository.CreateUserSession(ctx, userID, userIP, refreshToken, refreshTokenTTL); err != nil {
 		return Credentials{}, err
 	}
 

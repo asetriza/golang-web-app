@@ -11,7 +11,7 @@ type User struct {
 type UserSession struct {
 	ID              int    `json:"id" db:"id"`
 	UserID          int    `json:"userId" db:"user_id"`
-	UserIP          int    `json:"userIp" db:"user_ip"`
+	UserIP          string `json:"userIp" db:"user_ip"`
 	RefreshToken    string `json:"refresh_token" db:"refresh_token"`
 	RefreshTokenTTL int64  `json:"refresh_token_ttl" db:"refresh_token_ttl"`
 }

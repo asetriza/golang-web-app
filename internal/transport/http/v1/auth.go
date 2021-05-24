@@ -26,7 +26,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	id, err := h.Service.Authorization.CreateUser(c.Request.Context(), input)
+	id, err := h.Service.Authorization.CreateUser(c.Request.Context(), input, c.ClientIP())
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
@@ -49,7 +49,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	credentials, err := h.Service.Authorization.GenerateCredentials(c.Request.Context(), input.Username, input.Password)
+	credentials, err := h.Service.Authorization.CreateCredentials(c.Request.Context(), input.Username, input.Password, c.ClientIP())
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
@@ -72,7 +72,7 @@ func (h *Handler) refresh(c *gin.Context) {
 		return
 	}
 
-	credentials, err := h.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken)
+	credentials, err := h.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken, c.ClientIP())
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return

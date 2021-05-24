@@ -56,6 +56,7 @@ func (ar *AuthorizationRepository) GetUserSession(ctx context.Context, userID in
 		select
 			id,
 			user_id,
+			user_ip,
 			refresh_token,
 			refresh_token_ttl
 		from
@@ -68,15 +69,15 @@ func (ar *AuthorizationRepository) GetUserSession(ctx context.Context, userID in
 	return userSession, err
 }
 
-func (ar *AuthorizationRepository) CreateUserSession(ctx context.Context, userID int, refreshToken string, refreshTokenTTL int64) (int, error) {
+func (ar *AuthorizationRepository) CreateUserSession(ctx context.Context, userID int, userIP, refreshToken string, refreshTokenTTL int64) (int, error) {
 	row := ar.db.QueryRowContext(ctx, `
 		insert into user_sessions
-			(user_id, refresh_token, refresh_token_ttl)
+			(user_id, user_ip, refresh_token, refresh_token_ttl)
 		values
-			($1, $2, $3)
+			($1, $2, $3, $4)
 		returning
 			id;
-		`, userID, refreshToken, refreshTokenTTL)
+		`, userID, userIP, refreshToken, refreshTokenTTL)
 
 	var id int
 	if err := row.Scan(&id); err != nil {

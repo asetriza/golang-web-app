@@ -12,7 +12,7 @@ type Authorization interface {
 	CreateUser(ctx context.Context, user common.User) (int, error)
 	GetUser(ctx context.Context, username, password string) (common.User, error)
 	GetUserSession(ctx context.Context, userID int, refreshToken string) (common.UserSession, error)
-	CreateUserSession(ctx context.Context, userID int, refreshToken string, freshTokenTTL int64) (int, error)
+	CreateUserSession(ctx context.Context, userID int, userIP, refreshToken string, freshTokenTTL int64) (int, error)
 	UpdateUserSession(ctx context.Context, userID int, refreshToken string, refreshTokenTTL int64) (int, error)
 }
 

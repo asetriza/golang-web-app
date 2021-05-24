@@ -9,6 +9,7 @@ CREATE TABLE user_sessions (
     id serial not null unique,
     user_id int not null,
     foreign key (user_id) references users (id),
+    user_ip varchar(255) not null,
     refresh_token varchar(255) not null,
     refresh_token_ttl int not null
 );

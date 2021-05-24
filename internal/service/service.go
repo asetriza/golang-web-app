@@ -8,9 +8,9 @@ import (
 )
 
 type Authorization interface {
-	CreateUser(ctx context.Context, user common.User) (int, error)
-	GenerateCredentials(ctx context.Context, username, password string) (Credentials, error)
-	RefreshCredentials(ctx context.Context, token, refreshToken string) (Credentials, error)
+	CreateUser(ctx context.Context, user common.User, userIP string) (Credentials, error)
+	CreateCredentials(ctx context.Context, username, password, userIP string) (Credentials, error)
+	RefreshCredentials(ctx context.Context, token, refreshToken, userIP string) (Credentials, error)
 }
 
 type Todo interface {
