@@ -12,8 +12,8 @@ import (
 
 // TokenManager provides logic for JWT & Refresh tokens generation and parsing
 type TokenManager interface {
-	NewToken(userId string) (string, error)
-	ParseToken(accessToken string) (string, error)
+	NewToken(userID int) (string, error)
+	ParseToken(accessToken string) (int, error)
 	NewRefreshToken() string
 	CreateRefreshTokenTTL() int64
 }
@@ -27,7 +27,7 @@ type Token struct {
 
 func NewManager(signingKey string, tokenTTL, refreshTokenTTL string) *Token {
 	if signingKey == "" {
-		log.Fatalf("signing key parsing error")
+		log.Fatalf("signingKey parsing error")
 	}
 
 	tokenttl, err := strconv.Atoi(tokenTTL)
@@ -47,32 +47,39 @@ func NewManager(signingKey string, tokenTTL, refreshTokenTTL string) *Token {
 	}
 }
 
-func (t *Token) NewToken(userId string) (string, error) {
+func (t *Token) NewToken(userID int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(time.Duration(t.tokenTTL) * time.Minute).Unix(),
-		Subject:   userId,
+		Subject:   strconv.Itoa(userID),
 	})
 
 	return token.SignedString([]byte(t.signingKey))
 }
 
-func (t *Token) ParseToken(accessToken string) (string, error) {
+func (t *Token) ParseToken(accessToken string) (int, error) {
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(t.signingKey), nil
 	})
-	if err != nil {
-		return "", err
-	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", fmt.Errorf("error get user claims from token")
+		return 0, fmt.Errorf("error get user claims from token")
 	}
 
-	return claims["sub"].(string), nil
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		return 0, fmt.Errorf("error get sub from claims")
+	}
+
+	userID, err := strconv.Atoi(sub)
+	if err != nil {
+		return 0, fmt.Errorf("error")
+	}
+
+	return userID, err
 }
 
 func (t *Token) NewRefreshToken() string {

@@ -1,19 +1,20 @@
 package service
 
 import (
+	"context"
 	"golang-web-app/internal/common"
 	"golang-web-app/internal/repository"
 	"golang-web-app/pkg/auth"
 )
 
-type User interface {
-	Create(user common.User) (common.User, error)
+type Authorization interface {
+	CreateUser(ctx context.Context, user common.User) (int, error)
+	GenerateCredentials(ctx context.Context, username, password string) (Credentials, error)
+	RefreshCredentials(ctx context.Context, token, refreshToken string) (Credentials, error)
 }
 
-type Authorization interface {
-	CreateUser(user common.User) (int, error)
-	GenerateCredentials(username, password string) (Credentials, error)
-	RefreshCredentials(token, refreshToken string) (Credentials, error)
+type Todo interface {
+	Create(ctx context.Context, todo common.Todo) (int, error)
 }
 
 type Dependencies struct {
@@ -24,12 +25,12 @@ type Dependencies struct {
 
 type Service struct {
 	Authorization Authorization
-	User          User
+	Todo          Todo
 }
 
 func NewService(deps Dependencies) *Service {
 	return &Service{
 		Authorization: NewAuthorizationService(deps.Repository.Authorization, deps.TokenManager, deps.PasswordSalt),
-		User:          NewUserService(deps.Repository.User),
+		Todo:          NewTodoService(deps.Repository.Todo),
 	}
 }

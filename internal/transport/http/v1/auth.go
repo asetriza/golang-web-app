@@ -26,7 +26,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	id, err := h.Service.Authorization.CreateUser(input)
+	id, err := h.Service.Authorization.CreateUser(c.Request.Context(), input)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
@@ -36,8 +36,8 @@ func (h *Handler) signUp(c *gin.Context) {
 }
 
 type signInInput struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func (h *Handler) signIn(c *gin.Context) {
@@ -49,7 +49,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	credentials, err := h.Service.Authorization.GenerateCredentials(input.Username, input.Password)
+	credentials, err := h.Service.Authorization.GenerateCredentials(c.Request.Context(), input.Username, input.Password)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
@@ -72,7 +72,7 @@ func (h *Handler) refresh(c *gin.Context) {
 		return
 	}
 
-	credentials, err := h.Service.Authorization.RefreshCredentials(input.Token, input.RefreshToken)
+	credentials, err := h.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return

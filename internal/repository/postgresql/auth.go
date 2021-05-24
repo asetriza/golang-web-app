@@ -1,6 +1,7 @@
 package postgesql
 
 import (
+	"context"
 	"golang-web-app/internal/common"
 
 	"github.com/jmoiron/sqlx"
@@ -16,8 +17,8 @@ func NewAuthorizationRepository(db *sqlx.DB) *AuthorizationRepository {
 	}
 }
 
-func (ar *AuthorizationRepository) CreateUser(user common.User) (int, error) {
-	row := ar.db.QueryRow(`
+func (ar *AuthorizationRepository) CreateUser(ctx context.Context, user common.User) (int, error) {
+	row := ar.db.QueryRowContext(ctx, `
 		insert into users
 			(name, username, password)
 		values
@@ -34,9 +35,9 @@ func (ar *AuthorizationRepository) CreateUser(user common.User) (int, error) {
 	return id, nil
 }
 
-func (ar *AuthorizationRepository) GetUser(username, password string) (common.User, error) {
+func (ar *AuthorizationRepository) GetUser(ctx context.Context, username, password string) (common.User, error) {
 	var user common.User
-	err := ar.db.Get(&user, `
+	err := ar.db.GetContext(ctx, &user, `
 		select
 			id
 		from
@@ -49,9 +50,9 @@ func (ar *AuthorizationRepository) GetUser(username, password string) (common.Us
 	return user, err
 }
 
-func (ar *AuthorizationRepository) GetUserSession(userID int, refreshToken string) (common.UserSession, error) {
+func (ar *AuthorizationRepository) GetUserSession(ctx context.Context, userID int, refreshToken string) (common.UserSession, error) {
 	var userSession common.UserSession
-	err := ar.db.Get(&userSession, `
+	err := ar.db.GetContext(ctx, &userSession, `
 		select
 			id,
 			user_id,
@@ -67,8 +68,8 @@ func (ar *AuthorizationRepository) GetUserSession(userID int, refreshToken strin
 	return userSession, err
 }
 
-func (ar *AuthorizationRepository) CreateUserSession(userID int, refreshToken string, refreshTokenTTL int64) (int, error) {
-	row := ar.db.QueryRow(`
+func (ar *AuthorizationRepository) CreateUserSession(ctx context.Context, userID int, refreshToken string, refreshTokenTTL int64) (int, error) {
+	row := ar.db.QueryRowContext(ctx, `
 		insert into user_sessions
 			(user_id, refresh_token, refresh_token_ttl)
 		values
@@ -85,8 +86,8 @@ func (ar *AuthorizationRepository) CreateUserSession(userID int, refreshToken st
 	return id, nil
 }
 
-func (ar *AuthorizationRepository) UpdateUserSession(userID int, refreshToken string, refreshTokenTTL int64) (int, error) {
-	row := ar.db.QueryRow(`
+func (ar *AuthorizationRepository) UpdateUserSession(ctx context.Context, userID int, refreshToken string, refreshTokenTTL int64) (int, error) {
+	row := ar.db.QueryRowContext(ctx, `
 		update user_sessions set
 			refresh_token = $1,
 			refresh_token_ttl = $2

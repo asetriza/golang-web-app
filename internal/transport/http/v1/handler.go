@@ -23,6 +23,6 @@ func (h *Handler) Init(api *gin.RouterGroup) {
 	v1 := api.Group("/v1")
 	{
 		h.initAuthRoute(v1)
-		h.initUserRoute(v1)
+		h.initTodoRoute(v1)
 	}
 }

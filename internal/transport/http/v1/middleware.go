@@ -25,20 +25,20 @@ func NewMiddleware(tm auth.TokenManager) Middleware {
 	}
 }
 
-func (m *Middleware) parseAuthHeader(c *gin.Context) (string, error) {
+func (m *Middleware) parseAuthHeader(c *gin.Context) (int, error) {
 	header := c.GetHeader(authorizationHeader)
 	if header == "" {
-		return "", errors.New("empty auth header")
+		return 0, errors.New("empty auth header")
 	}
 
 	headerParts := strings.Split(header, " ")
 	log.Println(headerParts)
 	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-		return "", errors.New("invalid auth header")
+		return 0, errors.New("invalid auth header")
 	}
 
 	if len(headerParts[1]) == 0 {
-		return "", errors.New("token is empty")
+		return 0, errors.New("token is empty")
 	}
 
 	return m.tokenManager.ParseToken(headerParts[1])
