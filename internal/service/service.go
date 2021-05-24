@@ -15,6 +15,10 @@ type Authorization interface {
 
 type Todo interface {
 	Create(ctx context.Context, todo common.Todo) (int, error)
+	Get(ctx context.Context, todoID int) (common.Todo, error)
+	GetAll(ctx context.Context) ([]common.Todo, error)
+	Update(ctx context.Context, todo common.Todo) (int, error)
+	Delete(ctx context.Context, todoID int) (int, error)
 }
 
 type Dependencies struct {

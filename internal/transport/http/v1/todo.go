@@ -21,12 +21,19 @@ func (h *Handler) initTodoRoute(api *gin.RouterGroup) {
 
 func (h *Handler) createTodo(c *gin.Context) {
 	var input common.Todo
-
 	if err := c.BindJSON(&input); err != nil {
 		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	input.UserID = userID
 
 	id, err := h.Service.Todo.Create(c.Request.Context(), input)
 	if err != nil {
@@ -37,18 +44,71 @@ func (h *Handler) createTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
 }
 
-func (h *Handler) getTodos(c *gin.Context) {
-
+type getTodoInput struct {
+	todoID int `binding:"required"`
 }
 
 func (h *Handler) getTodo(c *gin.Context) {
+	var input getTodoInput
+	if err := c.BindJSON(&input); err != nil {
+		log.Println(err)
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
+	todo, err := h.Service.Todo.Get(c.Request.Context(), input.todoID)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"todo": todo})
+}
+
+func (h *Handler) getTodos(c *gin.Context) {
+	todos, err := h.Service.Todo.GetAll(c.Request.Context())
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"todos": todos})
 }
 
 func (h *Handler) updateTodo(c *gin.Context) {
+	var input common.Todo
+	if err := c.BindJSON(&input); err != nil {
+		log.Println(err)
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
+	id, err := h.Service.Todo.Update(c.Request.Context(), input)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
+}
+
+type deleteTodoInput struct {
+	todoID int `binding:"required"`
 }
 
 func (h *Handler) deleteTodo(c *gin.Context) {
+	var input deleteTodoInput
+	if err := c.BindJSON(&input); err != nil {
+		log.Println(err)
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
+	id, err := h.Service.Todo.Delete(c.Request.Context(), input.todoID)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
 }

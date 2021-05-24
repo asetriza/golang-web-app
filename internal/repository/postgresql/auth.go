@@ -18,18 +18,30 @@ func NewAuthorizationRepository(db *sqlx.DB) *AuthorizationRepository {
 }
 
 func (ar *AuthorizationRepository) CreateUser(ctx context.Context, user common.User) (int, error) {
-	row := ar.db.QueryRowContext(ctx, `
-		insert into users
-			(name, username, password)
-		values
-			($1, $2, $3)
+	rows, err := ar.db.NamedQueryContext(ctx, `
+		insert into users (
+			name,
+			username,
+			email,
+			password,
+		)
+		values (
+			:name,
+			:username,
+			:email,
+			:password
+		)
 		returning
-			id;
-		`, user.Name, user.Username, user.Password)
+			id;`, user)
+	if err != nil {
+		return 0, err
+	}
 
 	var id int
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+	for rows.Next() {
+		if err := rows.Scan(&id); err != nil {
+			return 0, err
+		}
 	}
 
 	return id, nil
@@ -71,13 +83,20 @@ func (ar *AuthorizationRepository) GetUserSession(ctx context.Context, userID in
 
 func (ar *AuthorizationRepository) CreateUserSession(ctx context.Context, userID int, userIP, refreshToken string, refreshTokenTTL int64) (int, error) {
 	row := ar.db.QueryRowContext(ctx, `
-		insert into user_sessions
-			(user_id, user_ip, refresh_token, refresh_token_ttl)
-		values
-			($1, $2, $3, $4)
+		insert into user_sessions (
+			user_id,
+			user_ip,
+			refresh_token,
+			refresh_token_ttl
+		)
+		values (
+			$1,
+			$2,
+			$3,
+			$4
+		)
 		returning
-			id;
-		`, userID, userIP, refreshToken, refreshTokenTTL)
+			id;`, userID, userIP, refreshToken, refreshTokenTTL)
 
 	var id int
 	if err := row.Scan(&id); err != nil {

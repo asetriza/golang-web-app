@@ -19,3 +19,19 @@ func NewTodoService(ru repository.Todo) *TodoService {
 func (ts *TodoService) Create(ctx context.Context, todo common.Todo) (int, error) {
 	return ts.Repository.Create(ctx, todo)
 }
+
+func (ts *TodoService) Get(ctx context.Context, todoID int) (common.Todo, error) {
+	return ts.Repository.Get(ctx, todoID)
+}
+
+func (ts *TodoService) GetAll(ctx context.Context) ([]common.Todo, error) {
+	return ts.Repository.GetAll(ctx)
+}
+
+func (ts *TodoService) Update(ctx context.Context, todo common.Todo) (int, error) {
+	return ts.Repository.Update(ctx, todo)
+}
+
+func (ts *TodoService) Delete(ctx context.Context, todoID int) (int, error) {
+	return ts.Repository.Delete(ctx, todoID)
+}

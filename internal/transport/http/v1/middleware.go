@@ -5,6 +5,7 @@ import (
 	"golang-web-app/pkg/auth"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -51,4 +52,23 @@ func (m *Middleware) Identity(c *gin.Context) {
 	}
 
 	c.Set(userCtx, id)
+}
+
+func getUserID(c *gin.Context) (int, error) {
+	idFromCtx, ok := c.Get(userCtx)
+	if !ok {
+		return 0, errors.New("userCtx not found")
+	}
+
+	idStr, ok := idFromCtx.(string)
+	if !ok {
+		return 0, errors.New("userCtx is invalid type")
+	}
+
+	idInt, err := strconv.Atoi(idStr)
+	if err != nil {
+		return 0, err
+	}
+
+	return idInt, nil
 }
