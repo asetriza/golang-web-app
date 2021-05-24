@@ -42,7 +42,7 @@ func (m *Middleware) parseAuthHeader(c *gin.Context) (int, error) {
 	return m.tokenManager.ParseToken(headerParts[1])
 }
 
-func (m *Middleware) Identity(c *gin.Context) {
+func (m *Middleware) IdentifyUser(c *gin.Context) {
 	id, err := m.parseAuthHeader(c)
 	if err != nil {
 		newErrorResponce(c, http.StatusUnauthorized, err.Error())

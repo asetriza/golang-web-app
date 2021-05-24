@@ -34,7 +34,7 @@ func (tr *TodoRepository) Create(ctx context.Context, todo common.Todo) (int, er
 			:done
 		)
 		returning
-			id; `, todo)
+			id;`, todo)
 	if err != nil {
 		return 0, err
 	}
@@ -53,8 +53,25 @@ func (tr *TodoRepository) Get(ctx context.Context, todoID int) (common.Todo, err
 	return common.Todo{}, nil
 }
 
-func (tr *TodoRepository) GetAll(ctx context.Context) ([]common.Todo, error) {
-	return []common.Todo{}, nil
+func (tr *TodoRepository) GetAll(ctx context.Context, userID int) ([]common.Todo, error) {
+	var todos []common.Todo
+	err := tr.db.SelectContext(ctx, &todos, `
+		select
+			id,
+			user_id,
+			name,
+			description,
+			notify_date,
+			done
+		from
+			todos
+		where
+			user_id = $1;`, userID)
+	if err != nil {
+		return []common.Todo{}, err
+	}
+
+	return todos, nil
 }
 
 func (tr *TodoRepository) Update(ctx context.Context, todo common.Todo) (int, error) {

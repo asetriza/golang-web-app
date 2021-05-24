@@ -74,9 +74,9 @@ func (t *Token) ParseToken(accessToken string) (int, error) {
 		return 0, fmt.Errorf("error get sub from claims")
 	}
 
-	userID, err := strconv.Atoi(sub)
-	if err != nil {
-		return 0, fmt.Errorf("error")
+	userID, err1 := strconv.Atoi(sub)
+	if err1 != nil {
+		return 0, err1
 	}
 
 	return userID, err

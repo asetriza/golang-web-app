@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) initTodoRoute(api *gin.RouterGroup) {
-	todo := api.Group("/todo", h.Middleware.Identity)
+	todo := api.Group("/todo", h.Middleware.IdentifyUser)
 	{
 		todo.POST("/", h.createTodo)
 		todo.GET("/", h.getTodos)
@@ -66,7 +66,13 @@ func (h *Handler) getTodo(c *gin.Context) {
 }
 
 func (h *Handler) getTodos(c *gin.Context) {
-	todos, err := h.Service.Todo.GetAll(c.Request.Context())
+	userID, err := getUserID(c)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	todos, err := h.Service.Todo.GetAll(c.Request.Context(), userID)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return

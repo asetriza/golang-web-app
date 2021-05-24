@@ -23,7 +23,7 @@ func (ar *AuthorizationRepository) CreateUser(ctx context.Context, user common.U
 			name,
 			username,
 			email,
-			password,
+			password
 		)
 		values (
 			:name,

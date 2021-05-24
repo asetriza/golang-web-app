@@ -2,6 +2,7 @@ package v1
 
 import (
 	"golang-web-app/internal/common"
+	"golang-web-app/internal/service"
 	"log"
 	"net/http"
 
@@ -74,6 +75,10 @@ func (h *Handler) refresh(c *gin.Context) {
 
 	credentials, err := h.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken, c.ClientIP())
 	if err != nil {
+		if err == service.RefreshTokenExpired {
+			newErrorResponce(c, http.StatusUnauthorized, err.Error())
+			return
+		}
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}

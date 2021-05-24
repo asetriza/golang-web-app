@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/sha1"
+	"database/sql"
 	"errors"
 	"fmt"
 	"golang-web-app/internal/common"
@@ -73,8 +74,11 @@ func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, r
 
 	userSession, err := as.Repository.GetUserSession(ctx, userID, refreshToken)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Println(err)
+			return Credentials{}, RefreshTokenExpired
+		}
 		log.Println(err)
-		return Credentials{}, err
 	}
 
 	if userSession.RefreshTokenTTL > time.Now().UnixNano() && userSession.UserIP == userIP {

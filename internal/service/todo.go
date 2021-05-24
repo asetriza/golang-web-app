@@ -24,8 +24,8 @@ func (ts *TodoService) Get(ctx context.Context, todoID int) (common.Todo, error)
 	return ts.Repository.Get(ctx, todoID)
 }
 
-func (ts *TodoService) GetAll(ctx context.Context) ([]common.Todo, error) {
-	return ts.Repository.GetAll(ctx)
+func (ts *TodoService) GetAll(ctx context.Context, userID int) ([]common.Todo, error) {
+	return ts.Repository.GetAll(ctx, userID)
 }
 
 func (ts *TodoService) Update(ctx context.Context, todo common.Todo) (int, error) {
