@@ -1,7 +1,7 @@
 package common
 
 type Todo struct {
-	ID          int    `json:"id" binding:"required" db:"id"`
+	ID          int    `json:"id" binding:"-" db:"id"`
 	UserID      int    `json:"userId" binding:"-" db:"user_id"`
 	Name        string `json:"name" binding:"required" db:"name"`
 	Description string `json:"description" binding:"required" db:"description"`

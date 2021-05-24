@@ -1,7 +1,7 @@
 package common
 
 type User struct {
-	ID       int    `json:"id" db:"id"`
+	ID       int    `json:"id" binding:"-" db:"id"`
 	Name     string `json:"name" binding:"required,min=3,max=64" db:"name"`
 	Username string `json:"username" binding:"required,min=3,max=64" db:"username"`
 	Email    string `json:"email" binding:"required,email,max=64" db:"email"`
