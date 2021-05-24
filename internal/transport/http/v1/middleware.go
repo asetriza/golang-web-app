@@ -62,10 +62,5 @@ func getUserID(c *gin.Context) (int, error) {
 		return 0, errors.New("userCtx is invalid type")
 	}
 
-	// idInt, err := strconv.Atoi(idStr)
-	// if err != nil {
-	// 	return 0, err
-	// }
-
 	return id, nil
 }
