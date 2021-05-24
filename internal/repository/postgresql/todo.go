@@ -19,10 +19,12 @@ func NewTodoRepository(db *sqlx.DB) *TodoRepository {
 
 func (tr *TodoRepository) Create(ctx context.Context, todo common.Todo) (int, error) {
 	rows, err := tr.db.NamedQueryContext(ctx, `
-		insert into users (
+		insert into todos (
+			user_id,
 			name,
-			username,
-			password
+			description,
+			notify_date,
+			done
 		)
 		values (
 			:user_id,

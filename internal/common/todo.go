@@ -6,5 +6,5 @@ type Todo struct {
 	Name        string `json:"name" binding:"required" db:"name"`
 	Description string `json:"description" binding:"required" db:"description"`
 	NotifyDate  int64  `json:"notifyDate" binding:"required" db:"notify_date"` // in Unix time format
-	Done        bool   `json:"done" binding:"required" db:"done"`
+	Done        bool   `json:"done" db:"done"`
 }

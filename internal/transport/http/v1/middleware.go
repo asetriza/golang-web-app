@@ -3,9 +3,7 @@ package v1
 import (
 	"errors"
 	"golang-web-app/pkg/auth"
-	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +31,6 @@ func (m *Middleware) parseAuthHeader(c *gin.Context) (int, error) {
 	}
 
 	headerParts := strings.Split(header, " ")
-	log.Println(headerParts)
 	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
 		return 0, errors.New("invalid auth header")
 	}
@@ -60,15 +57,15 @@ func getUserID(c *gin.Context) (int, error) {
 		return 0, errors.New("userCtx not found")
 	}
 
-	idStr, ok := idFromCtx.(string)
+	id, ok := idFromCtx.(int)
 	if !ok {
 		return 0, errors.New("userCtx is invalid type")
 	}
 
-	idInt, err := strconv.Atoi(idStr)
-	if err != nil {
-		return 0, err
-	}
+	// idInt, err := strconv.Atoi(idStr)
+	// if err != nil {
+	// 	return 0, err
+	// }
 
-	return idInt, nil
+	return id, nil
 }
