@@ -1,24 +1,16 @@
-package v1
+package rest
 
 import (
-	"github.com/asetriza/golang-web-app/internal/common"
-	"github.com/asetriza/golang-web-app/internal/service"
 	"log"
 	"net/http"
+
+	"github.com/asetriza/golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) initAuthRoute(api *gin.RouterGroup) {
-	auth := api.Group("/auth")
-	{
-		auth.POST("/sign-up", h.signUp)
-		auth.POST("/sign-in", h.signIn)
-		auth.POST("/refresh", h.refresh)
-	}
-}
-
-func (h *Handler) signUp(c *gin.Context) {
+func (r *REST) signUp(c *gin.Context) {
 	var input common.User
 
 	if err := c.BindJSON(&input); err != nil {
@@ -27,7 +19,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 
-	id, err := h.Service.Authorization.CreateUser(c.Request.Context(), input, c.ClientIP())
+	id, err := r.Service.Authorization.CreateUser(c.Request.Context(), input, c.ClientIP())
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
@@ -41,7 +33,7 @@ type signInInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (h *Handler) signIn(c *gin.Context) {
+func (r *REST) signIn(c *gin.Context) {
 	var input signInInput
 
 	if err := c.BindJSON(&input); err != nil {
@@ -50,7 +42,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	credentials, err := h.Service.Authorization.CreateCredentials(c.Request.Context(), input.Username, input.Password, c.ClientIP())
+	credentials, err := r.Service.Authorization.CreateCredentials(c.Request.Context(), input.Username, input.Password, c.ClientIP())
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
@@ -64,7 +56,7 @@ type refreshInput struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-func (h *Handler) refresh(c *gin.Context) {
+func (r *REST) refresh(c *gin.Context) {
 	var input refreshInput
 
 	if err := c.BindJSON(&input); err != nil {
@@ -73,7 +65,7 @@ func (h *Handler) refresh(c *gin.Context) {
 		return
 	}
 
-	credentials, err := h.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken, c.ClientIP())
+	credentials, err := r.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken, c.ClientIP())
 	if err != nil {
 		if err == service.RefreshTokenExpired {
 			newErrorResponce(c, http.StatusUnauthorized, err.Error())
