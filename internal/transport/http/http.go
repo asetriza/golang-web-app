@@ -20,7 +20,7 @@ func NewHTTP(serv *service.Service, tm auth.TokenManager) *HTTP {
 	}
 }
 
-func (h *HTTP) Init() *gin.Engine {
+func (h *HTTP) Router() *gin.Engine {
 	router := gin.Default()
 	router.Use(
 		gin.Logger(),

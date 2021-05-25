@@ -8,19 +8,18 @@ import (
 	trpHTTP "golang-web-app/internal/transport/http"
 	"golang-web-app/pkg/auth"
 	"golang-web-app/pkg/database/postgresql"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
-func Run() {
+func Run() error {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	config := postgresql.NewConfig(
+	config, err := postgresql.NewConfig(
 		os.Getenv("POSTGRESQL_USERNAME"),
 		os.Getenv("POSTGRESQL_PASSWORD"),
 		os.Getenv("POSTGRESQL_HOST"),
@@ -28,6 +27,9 @@ func Run() {
 		os.Getenv("POSTGRESQL_DB_NAME"),
 		os.Getenv("POSTGRESQL_SSL_MODE"),
 	)
+	if err != nil {
+		return err
+	}
 
 	tokenManager := auth.NewManager(os.Getenv("SIGN_IN_KEY"), os.Getenv("TOKEN_TTL"), os.Getenv("REFRESH_TOKEN_TTL"))
 
@@ -41,9 +43,11 @@ func Run() {
 
 	newHTTP := trpHTTP.NewHTTP(newService, tokenManager)
 
-	srv := server.NewServer(os.Getenv("PORT"), newHTTP.Init())
+	srv := server.NewServer(os.Getenv("PORT"), newHTTP.Router())
 
 	if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
-		log.Println(err.Error())
+		return err
 	}
+
+	return nil
 }

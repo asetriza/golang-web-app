@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 )
 
@@ -16,10 +15,10 @@ type Config struct {
 }
 
 // NewConfig creates new config of database, returns pointer to config or panics on error.
-func NewConfig(user, password, host, port, dbName, sslMode string) Config {
+func NewConfig(user, password, host, port, dbName, sslMode string) (Config, error) {
 	port16, err := strconv.ParseInt(port, 10, 16)
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, err
 	}
 
 	return Config{
@@ -29,7 +28,7 @@ func NewConfig(user, password, host, port, dbName, sslMode string) Config {
 		PostgreSQLPort:     port16,
 		PostgreSQLDBName:   dbName,
 		SSLMode:            sslMode,
-	}
+	}, nil
 }
 
 // GetConnectionString creates connection string from config struct and returns string.
