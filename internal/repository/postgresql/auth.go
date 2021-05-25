@@ -1,7 +1,8 @@
 package postgesql
 
 import (
-	"golang-web-app/internal/common"
+	"context"
+	"github.com/asetriza/golang-web-app/internal/common"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -16,27 +17,39 @@ func NewAuthorizationRepository(db *sqlx.DB) *AuthorizationRepository {
 	}
 }
 
-func (ar *AuthorizationRepository) CreateUser(user common.User) (int, error) {
-	row := ar.db.QueryRow(`
-		insert into users
-			(name, username, password)
-		values
-			($1, $2, $3)
+func (ar *AuthorizationRepository) CreateUser(ctx context.Context, user common.User) (int, error) {
+	rows, err := ar.db.NamedQueryContext(ctx, `
+		insert into users (
+			name,
+			username,
+			email,
+			password
+		)
+		values (
+			:name,
+			:username,
+			:email,
+			:password
+		)
 		returning
-			id;
-		`, user.Name, user.Username, user.Password)
+			id;`, user)
+	if err != nil {
+		return 0, err
+	}
 
 	var id int
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+	for rows.Next() {
+		if err := rows.Scan(&id); err != nil {
+			return 0, err
+		}
 	}
 
 	return id, nil
 }
 
-func (ar *AuthorizationRepository) GetUser(username, password string) (common.User, error) {
+func (ar *AuthorizationRepository) GetUser(ctx context.Context, username, password string) (common.User, error) {
 	var user common.User
-	err := ar.db.Get(&user, `
+	err := ar.db.GetContext(ctx, &user, `
 		select
 			id
 		from
@@ -47,4 +60,67 @@ func (ar *AuthorizationRepository) GetUser(username, password string) (common.Us
 		`, username, password)
 
 	return user, err
+}
+
+func (ar *AuthorizationRepository) GetUserSession(ctx context.Context, userID int, refreshToken string) (common.UserSession, error) {
+	var userSession common.UserSession
+	err := ar.db.GetContext(ctx, &userSession, `
+		select
+			id,
+			user_id,
+			user_ip,
+			refresh_token,
+			refresh_token_ttl
+		from
+			user_sessions
+		where
+			user_id = $1
+			and refresh_token = $2;
+		`, userID, refreshToken)
+
+	return userSession, err
+}
+
+func (ar *AuthorizationRepository) CreateUserSession(ctx context.Context, userID int, userIP, refreshToken string, refreshTokenTTL int64) (int, error) {
+	row := ar.db.QueryRowContext(ctx, `
+		insert into user_sessions (
+			user_id,
+			user_ip,
+			refresh_token,
+			refresh_token_ttl
+		)
+		values (
+			$1,
+			$2,
+			$3,
+			$4
+		)
+		returning
+			id;`, userID, userIP, refreshToken, refreshTokenTTL)
+
+	var id int
+	if err := row.Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (ar *AuthorizationRepository) UpdateUserSession(ctx context.Context, userID int, refreshToken string, refreshTokenTTL int64) (int, error) {
+	row := ar.db.QueryRowContext(ctx, `
+		update user_sessions set
+			refresh_token = $1,
+			refresh_token_ttl = $2
+		where
+			user_id = $3
+		returning
+			id;
+		`, refreshToken, refreshTokenTTL, userID)
+
+	var id int
+	if err := row.Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }

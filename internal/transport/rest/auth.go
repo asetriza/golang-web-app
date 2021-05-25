@@ -1,0 +1,79 @@
+package rest
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/asetriza/golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/internal/service"
+
+	"github.com/gin-gonic/gin"
+)
+
+func (r *REST) signUp(c *gin.Context) {
+	var input common.User
+
+	if err := c.BindJSON(&input); err != nil {
+		log.Println(err)
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	id, err := r.Service.Authorization.CreateUser(c.Request.Context(), input, c.ClientIP())
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
+}
+
+type signInInput struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (r *REST) signIn(c *gin.Context) {
+	var input signInInput
+
+	if err := c.BindJSON(&input); err != nil {
+		log.Println(err)
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	credentials, err := r.Service.Authorization.CreateCredentials(c.Request.Context(), input.Username, input.Password, c.ClientIP())
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
+}
+
+type refreshInput struct {
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+func (r *REST) refresh(c *gin.Context) {
+	var input refreshInput
+
+	if err := c.BindJSON(&input); err != nil {
+		log.Println(err)
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	credentials, err := r.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken, c.ClientIP())
+	if err != nil {
+		if err == service.RefreshTokenExpired {
+			newErrorResponce(c, http.StatusUnauthorized, err.Error())
+			return
+		}
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
+}

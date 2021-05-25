@@ -1,8 +1,6 @@
-package v1
+package rest
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,6 +9,5 @@ type ErrorResponce struct {
 }
 
 func newErrorResponce(c *gin.Context, statusCode int, message string) {
-	log.Print(message)
 	c.AbortWithStatusJSON(statusCode, ErrorResponce{message})
 }

@@ -1,29 +1,37 @@
 package repository
 
 import (
-	"golang-web-app/internal/common"
-	psqlrepo "golang-web-app/internal/repository/postgresql"
+	"context"
+	"github.com/asetriza/golang-web-app/internal/common"
+	psqlrepo "github.com/asetriza/golang-web-app/internal/repository/postgresql"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type Authorization interface {
-	CreateUser(user common.User) (int, error)
-	GetUser(username, password string) (common.User, error)
+	CreateUser(ctx context.Context, user common.User) (int, error)
+	GetUser(ctx context.Context, username, password string) (common.User, error)
+	GetUserSession(ctx context.Context, userID int, refreshToken string) (common.UserSession, error)
+	CreateUserSession(ctx context.Context, userID int, userIP, refreshToken string, freshTokenTTL int64) (int, error)
+	UpdateUserSession(ctx context.Context, userID int, refreshToken string, refreshTokenTTL int64) (int, error)
 }
 
-type User interface {
-	Create(common.User) (common.User, error)
+type Todo interface {
+	Create(ctx context.Context, todo common.Todo) (int, error)
+	Get(ctx context.Context, todoID int) (common.Todo, error)
+	GetAll(ctx context.Context, userID int) ([]common.Todo, error)
+	Update(ctx context.Context, todo common.Todo) (int, error)
+	Delete(ctx context.Context, todoID int) (int, error)
 }
 
 type Repository struct {
 	Authorization Authorization
-	User          User
+	Todo          Todo
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		Authorization: psqlrepo.NewAuthorizationRepository(db),
-		User:          psqlrepo.NewUserRepository(db),
+		Todo:          psqlrepo.NewTodoRepository(db),
 	}
 }
