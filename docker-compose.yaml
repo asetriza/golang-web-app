@@ -3,7 +3,7 @@ version: '3'
 services:
     db:
         restart: always
-        image: postgres
+        image: postgres:13.3-alpine
         volumes:
             - ${POSTGRESQL_PATH}
         environment:
