@@ -33,4 +33,4 @@ dockerdown:
 lint:
 	golangci-lint run
 
-deploy: build lint dockerup migrateup
+deploy: build lint dockerup
