@@ -2,7 +2,7 @@ package postgesql
 
 import (
 	"context"
-	"golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/internal/common"
 
 	"github.com/jmoiron/sqlx"
 )

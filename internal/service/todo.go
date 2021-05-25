@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"golang-web-app/internal/common"
-	"golang-web-app/internal/repository"
+	"github.com/asetriza/golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/internal/repository"
 )
 
 type TodoService struct {

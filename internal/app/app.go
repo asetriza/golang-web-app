@@ -2,12 +2,12 @@ package app
 
 import (
 	"errors"
-	"golang-web-app/internal/repository"
-	"golang-web-app/internal/server"
-	"golang-web-app/internal/service"
-	trpHTTP "golang-web-app/internal/transport/http"
-	"golang-web-app/pkg/auth"
-	"golang-web-app/pkg/database/postgresql"
+	"github.com/asetriza/golang-web-app/internal/repository"
+	"github.com/asetriza/golang-web-app/internal/server"
+	"github.com/asetriza/golang-web-app/internal/service"
+	"github.com/asetriza/golang-web-app/internal/transport/rest"
+	"github.com/asetriza/golang-web-app/pkg/auth"
+	"github.com/asetriza/golang-web-app/pkg/database/postgresql"
 	"net/http"
 	"os"
 
@@ -41,7 +41,7 @@ func Run() error {
 		PasswordSalt: os.Getenv("PASSWORD_SALT"),
 	})
 
-	newHTTP := trpHTTP.NewHTTP(newService, tokenManager)
+	newHTTP := rest.NewHTTP(newService, tokenManager)
 
 	srv := server.NewServer(os.Getenv("PORT"), newHTTP.Router())
 

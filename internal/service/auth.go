@@ -6,9 +6,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"golang-web-app/internal/common"
-	"golang-web-app/internal/repository"
-	"golang-web-app/pkg/auth"
+	"github.com/asetriza/golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/internal/repository"
+	"github.com/asetriza/golang-web-app/pkg/auth"
 	"log"
 	"time"
 )

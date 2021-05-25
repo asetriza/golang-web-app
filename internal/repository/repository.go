@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"golang-web-app/internal/common"
-	psqlrepo "golang-web-app/internal/repository/postgresql"
+	"github.com/asetriza/golang-web-app/internal/common"
+	psqlrepo "github.com/asetriza/golang-web-app/internal/repository/postgresql"
 
 	"github.com/jmoiron/sqlx"
 )
