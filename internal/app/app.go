@@ -34,15 +34,20 @@ func Run() error {
 
 	tokenManager := auth.NewManager(os.Getenv("SIGN_IN_KEY"), os.Getenv("TOKEN_TTL"), os.Getenv("REFRESH_TOKEN_TTL"))
 
-	newRepository := repository.NewRepository(postgresql.NewClient(config.GetConnectionString()))
+	conn, err := postgresql.NewClient(config.GetConnectionString())
+	if err != nil {
+		return err
+	}
 
-	newService := service.NewService(service.Dependencies{
-		Repository:   newRepository,
+	Repository := repository.NewRepository(conn)
+
+	Service := service.NewService(service.Dependencies{
+		Repository:   Repository,
 		TokenManager: tokenManager,
 		PasswordSalt: os.Getenv("PASSWORD_SALT"),
 	})
 
-	REST := rest.NewREST(newService, tokenManager)
+	REST := rest.NewREST(Service, tokenManager)
 
 	srv := server.NewServer(os.Getenv("PORT"), REST.Router())
 
