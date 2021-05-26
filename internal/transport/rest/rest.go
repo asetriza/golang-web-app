@@ -7,14 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const headerXRequestID = "X-Request-ID"
+
 type REST struct {
 	Service      *service.Service
 	TokenManager auth.TokenManager
 }
 
-func NewREST(serv *service.Service, tm auth.TokenManager) *REST {
+func NewREST(s *service.Service, tm auth.TokenManager) *REST {
 	return &REST{
-		Service:      serv,
+		Service:      s,
 		TokenManager: tm,
 	}
 }
@@ -22,7 +24,6 @@ func NewREST(serv *service.Service, tm auth.TokenManager) *REST {
 func (r *REST) Router() *gin.Engine {
 	router := gin.Default()
 	router.Use(
-		gin.Logger(),
 		gin.Recovery(),
 		corsMiddleware,
 	)
