@@ -14,18 +14,17 @@ func (r *REST) signUp(c *gin.Context) {
 	var input common.User
 
 	if err := c.BindJSON(&input); err != nil {
-		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	id, err := r.Service.Authorization.CreateUser(c.Request.Context(), input, c.ClientIP())
+	credentials, err := r.Service.Authorization.CreateUser(c.Request.Context(), input, c.ClientIP())
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
+	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
 }
 
 type signInInput struct {

@@ -22,8 +22,10 @@ func NewREST(s *service.Service, tm auth.TokenManager) *REST {
 }
 
 func (r *REST) Router() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
 	router.Use(
+		SetRqIDToCtx,
+		loggerMiddleware,
 		gin.Recovery(),
 		corsMiddleware,
 	)
