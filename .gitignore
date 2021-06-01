@@ -3,6 +3,7 @@
 bin/
 .DS_Store
 .database/
+cover.txt
 
 # Binaries for programs and plugins
 *.exe
