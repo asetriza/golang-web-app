@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/asetriza/golang-web-app/internal/common"
 	psqlrepo "github.com/asetriza/golang-web-app/internal/repository/postgresql"
 
@@ -20,8 +21,8 @@ type Todo interface {
 	Create(ctx context.Context, todo common.Todo) (int, error)
 	Get(ctx context.Context, todoID int) (common.Todo, error)
 	GetAll(ctx context.Context, userID int) ([]common.Todo, error)
-	Update(ctx context.Context, todo common.Todo) (int, error)
-	Delete(ctx context.Context, todoID int) (int, error)
+	Update(ctx context.Context, todo common.Todo) error
+	Delete(ctx context.Context, todoID int) error
 }
 
 type Repository struct {

@@ -36,13 +36,19 @@ di:
 lint:
 	golangci-lint run
 
-mock:
+mockrepository:
 	~/go/bin/mockgen --destination internal/repository/mock/repository.go github.com/asetriza/golang-web-app/internal/repository Authorization,Todo
+
+mockservice:
+	~/go/bin/mockgen --destination internal/service/mock/service.go github.com/asetriza/golang-web-app/internal/service Authorization,Todo
 
 test:
 	go test ./... -coverprofile=cover.txt
 
-cover:
+coverhtml:
 	go tool cover -html=cover.txt
+
+coverfunc:
+	go tool cover -func=cover.txt
 
 deploy: build lint dockerup

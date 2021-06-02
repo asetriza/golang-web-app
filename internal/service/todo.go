@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/asetriza/golang-web-app/internal/common"
 	"github.com/asetriza/golang-web-app/internal/repository"
 )
@@ -28,10 +29,10 @@ func (ts *TodoService) GetAll(ctx context.Context, userID int) ([]common.Todo, e
 	return ts.Repository.GetAll(ctx, userID)
 }
 
-func (ts *TodoService) Update(ctx context.Context, todo common.Todo) (int, error) {
+func (ts *TodoService) Update(ctx context.Context, todo common.Todo) error {
 	return ts.Repository.Update(ctx, todo)
 }
 
-func (ts *TodoService) Delete(ctx context.Context, todoID int) (int, error) {
+func (ts *TodoService) Delete(ctx context.Context, todoID int) error {
 	return ts.Repository.Delete(ctx, todoID)
 }
