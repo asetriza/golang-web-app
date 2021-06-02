@@ -9,7 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func TestCreateUser(t *testing.T) {
+func TestAuthorizationRepository_Create(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -23,7 +23,7 @@ func TestCreateUser(t *testing.T) {
 
 	testTable := []struct {
 		name    string
-		ar      *AuthorizationRepository
+		r       *AuthorizationRepository
 		user    common.User
 		mock    func()
 		want    int
@@ -31,7 +31,7 @@ func TestCreateUser(t *testing.T) {
 	}{
 		{
 			name: "OK",
-			ar:   ar,
+			r:    ar,
 			user: common.User{
 				Name:     "name",
 				Username: "username",
@@ -46,7 +46,7 @@ func TestCreateUser(t *testing.T) {
 		},
 		{
 			name: "Empty fields",
-			ar:   ar,
+			r:    ar,
 			user: common.User{
 				Name:     "",
 				Username: "",
@@ -64,7 +64,7 @@ func TestCreateUser(t *testing.T) {
 	for _, tc := range testTable {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock()
-			got, err := tc.ar.CreateUser(context.Background(), tc.user)
+			got, err := tc.r.CreateUser(context.Background(), tc.user)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
@@ -72,9 +72,6 @@ func TestCreateUser(t *testing.T) {
 			if err == nil && got != tc.want {
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 			}
-			// if err := mock.ExpectationsWereMet(); err != nil {
-			// 	t.Errorf("there were unfulfilled expectations: %s", err)
-			// }
 		})
 	}
 }
