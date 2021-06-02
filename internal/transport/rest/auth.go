@@ -36,7 +36,6 @@ func (r *REST) signIn(c *gin.Context) {
 	var input signInInput
 
 	if err := c.BindJSON(&input); err != nil {
-		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}

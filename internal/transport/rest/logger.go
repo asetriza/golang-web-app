@@ -11,12 +11,12 @@ func WithRqID(ctx context.Context, rqID string) context.Context {
 	return context.WithValue(ctx, requestIDKey, rqID)
 }
 
-// WithRqID returns a context which knows its request ID
+// WithInfo returns a context which knows its info
 func WithInfo(ctx context.Context, info string) context.Context {
 	return context.WithValue(ctx, infoCtx, info)
 }
 
-// WithSnID returns a context which knows its session ID
+// WithUserID returns a context which knows its user ID
 func WithUserID(ctx context.Context, userID int) context.Context {
 	return context.WithValue(ctx, userIDKey, userID)
 }

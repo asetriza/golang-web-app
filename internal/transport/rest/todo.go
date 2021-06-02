@@ -71,6 +71,9 @@ func (r *REST) getTodos(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"todos": todos})
 }
 
+type updateTodoInput struct {
+}
+
 func (r *REST) updateTodo(c *gin.Context) {
 	var input common.Todo
 	if err := c.BindJSON(&input); err != nil {
@@ -79,17 +82,17 @@ func (r *REST) updateTodo(c *gin.Context) {
 		return
 	}
 
-	id, err := r.Service.Todo.Update(c.Request.Context(), input)
+	err := r.Service.Todo.Update(c.Request.Context(), input)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
+	c.JSON(http.StatusOK, map[string]interface{}{"id": 1})
 }
 
 type deleteTodoInput struct {
-	todoID int `binding:"required"`
+	TodoID int `json:"todoId" binding:"required"`
 }
 
 func (r *REST) deleteTodo(c *gin.Context) {
@@ -100,11 +103,11 @@ func (r *REST) deleteTodo(c *gin.Context) {
 		return
 	}
 
-	id, err := r.Service.Todo.Delete(c.Request.Context(), input.todoID)
+	err := r.Service.Todo.Delete(c.Request.Context(), input.TodoID)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
+	c.JSON(http.StatusOK, map[string]interface{}{"id": input.TodoID})
 }

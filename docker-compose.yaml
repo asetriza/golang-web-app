@@ -13,7 +13,7 @@ services:
 
     golang-web-app:
         build: ./
-        command: bin/./main
+        command: ./main
         ports:
             - ${PORT}:${PORT}
         depends_on:
