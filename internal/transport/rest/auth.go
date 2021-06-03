@@ -50,8 +50,8 @@ func (r *REST) signIn(c *gin.Context) {
 }
 
 type refreshInput struct {
-	Token        string `json:"token"`
-	RefreshToken string `json:"refreshToken"`
+	Token        string `json:"token" binding:"required"`
+	RefreshToken string `json:"refreshToken" binding:"required"`
 }
 
 func (r *REST) refresh(c *gin.Context) {
