@@ -159,7 +159,7 @@ func TestHandler_getTodos(t *testing.T) {
 			responseBody: `{"message":"Internal server error"}`,
 		},
 		{
-			name:         "Internal server error",
+			name:         "user id error",
 			body:         ``,
 			userID:       1,
 			mockBehavior: func(r *mock_service.MockTodo, userID int, pagination common.Pagination) {},
