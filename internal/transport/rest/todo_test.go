@@ -3,6 +3,7 @@ package rest
 import (
 	"bytes"
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -139,21 +140,34 @@ func TestHandler_getTodos(t *testing.T) {
 			statusCode:   http.StatusOK,
 			responseBody: `{"todos":[{"id":0,"userId":0,"name":"","description":"","notifyDate":0,"done":false}]}`,
 		},
-		// {
-		// 	name:         "Internal server error",
-		// 	body:         ``,
-		// 	userID:       1,
-		// 	mockBehavior: func(r *mock_service.MockTodo, userID int, pagination common.Pagination) {},
-		// 	setUserID: func(c *gin.Context) {
-		// 		c.Set("afd", 1)
-		// 	},
-		// 	pagination: common.Pagination{
-		// 		CurrentPage:  1,
-		// 		ItemsPerPage: 2,
-		// 	},
-		// 	statusCode:   http.StatusInternalServerError,
-		// 	responseBody: `{"message":"userCtx not found"}`,
-		// },
+		{
+			name:   "OK",
+			body:   ``,
+			userID: 1,
+			mockBehavior: func(r *mock_service.MockTodo, userID int, pagination common.Pagination) {
+				r.EXPECT().GetAll(context.Background(), userID, pagination).Return([]common.Todo{}, errors.New("Internal server error"))
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			pagination: common.Pagination{
+				CurrentPage:  1,
+				ItemsPerPage: 2,
+			},
+			statusCode:   http.StatusInternalServerError,
+			responseBody: `{"message":"Internal server error"}`,
+		},
+		{
+			name:         "Internal server error",
+			body:         ``,
+			userID:       1,
+			mockBehavior: func(r *mock_service.MockTodo, userID int, pagination common.Pagination) {},
+			setUserID: func(c *gin.Context) {
+				c.Set("afd", 1)
+			},
+			statusCode:   http.StatusInternalServerError,
+			responseBody: `{"message":"userCtx not found"}`,
+		},
 	}
 
 	for _, tc := range testTable {
