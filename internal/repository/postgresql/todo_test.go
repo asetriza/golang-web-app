@@ -179,6 +179,7 @@ func TestAuthorizationRepository_Get(t *testing.T) {
 	testTable := []struct {
 		name    string
 		r       *TodoRepository
+		userID  int
 		todoID  int
 		mock    func()
 		want    common.Todo
@@ -187,12 +188,13 @@ func TestAuthorizationRepository_Get(t *testing.T) {
 		{
 			name:   "OK",
 			r:      tr,
+			userID: 1,
 			todoID: 1,
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"id", "user_id", "name", "description", "notify_date", "done"}).
 					AddRow(1, 1, "name", "description", 1, false)
 				mock.ExpectQuery("select id, user_id, name, description, notify_date, done from todos").
-					WithArgs(1).
+					WithArgs(1, 1).
 					WillReturnRows(rows)
 			},
 			want: common.Todo{
@@ -208,9 +210,10 @@ func TestAuthorizationRepository_Get(t *testing.T) {
 			name:   "Empty fields",
 			r:      tr,
 			todoID: -1,
+			userID: 1,
 			mock: func() {
 				mock.ExpectQuery("select id, user_id, name, description, notify_date, done from todos").
-					WithArgs(-1).
+					WithArgs(-1, 1).
 					WillReturnError(sql.ErrNoRows)
 			},
 			wantErr: true,
@@ -220,7 +223,7 @@ func TestAuthorizationRepository_Get(t *testing.T) {
 	for _, tc := range testTable {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock()
-			got, err := tc.r.Get(context.Background(), tc.todoID)
+			got, err := tc.r.Get(context.Background(), tc.userID, tc.todoID)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return

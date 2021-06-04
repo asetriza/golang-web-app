@@ -21,8 +21,8 @@ func (ts *TodoService) Create(ctx context.Context, todo common.Todo) (int, error
 	return ts.Repository.Create(ctx, todo)
 }
 
-func (ts *TodoService) Get(ctx context.Context, todoID int) (common.Todo, error) {
-	return ts.Repository.Get(ctx, todoID)
+func (ts *TodoService) Get(ctx context.Context, userID, todoID int) (common.Todo, error) {
+	return ts.Repository.Get(ctx, userID, todoID)
 }
 
 func (ts *TodoService) GetAll(ctx context.Context, userID int, pagination common.Pagination) ([]common.Todo, error) {

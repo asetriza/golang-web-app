@@ -33,6 +33,9 @@ ddown:
 di:
 	docker images
 
+dp:
+	docker ps
+
 lint:
 	golangci-lint run
 
