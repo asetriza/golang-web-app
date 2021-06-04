@@ -117,7 +117,13 @@ func (r *REST) deleteTodo(c *gin.Context) {
 		return
 	}
 
-	err := r.Service.Todo.Delete(c.Request.Context(), input.TodoID)
+	userID, err := getUserIDFromCtx(c)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = r.Service.Todo.Delete(c.Request.Context(), userID, input.TodoID)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return

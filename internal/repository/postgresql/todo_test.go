@@ -251,6 +251,7 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 	testTable := []struct {
 		name    string
 		r       *TodoRepository
+		userID  int
 		todoID  int
 		mock    func()
 		wantErr bool
@@ -259,10 +260,11 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 			name:   "OK",
 			r:      tr,
 			todoID: 1,
+			userID: 1,
 			mock: func() {
 				rows := sqlmock.NewRows([]string{})
 				mock.ExpectQuery("delete from todos").
-					WithArgs(1).
+					WithArgs(1, 1).
 					WillReturnRows(rows).
 					RowsWillBeClosed()
 			},
@@ -271,6 +273,7 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 			name:   "Error no row",
 			r:      tr,
 			todoID: -1,
+			userID: 1,
 			mock: func() {
 				mock.ExpectQuery("delete from todos").WithArgs(-1).WillReturnError(sql.ErrNoRows)
 			},
@@ -281,7 +284,7 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 	for _, tc := range testTable {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock()
-			err := tc.r.Delete(context.Background(), tc.todoID)
+			err := tc.r.Delete(context.Background(), tc.userID, tc.todoID)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return

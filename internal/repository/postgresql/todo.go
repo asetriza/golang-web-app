@@ -96,9 +96,9 @@ func (tr *TodoRepository) Update(ctx context.Context, todo common.Todo) error {
 	return nil
 }
 
-func (tr *TodoRepository) Delete(ctx context.Context, todoID int) error {
+func (tr *TodoRepository) Delete(ctx context.Context, userID, todoID int) error {
 	rows, err := tr.db.QueryContext(ctx,
-		`delete from todos where id = $1;`, todoID)
+		`delete from todos where id = $1 and user_id = $2;`, todoID, userID)
 	if err != nil {
 		return err
 	}

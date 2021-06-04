@@ -33,6 +33,6 @@ func (ts *TodoService) Update(ctx context.Context, todo common.Todo) error {
 	return ts.Repository.Update(ctx, todo)
 }
 
-func (ts *TodoService) Delete(ctx context.Context, todoID int) error {
-	return ts.Repository.Delete(ctx, todoID)
+func (ts *TodoService) Delete(ctx context.Context, userID, todoID int) error {
+	return ts.Repository.Delete(ctx, userID, todoID)
 }
