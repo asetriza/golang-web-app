@@ -69,7 +69,7 @@ func (tr *TodoRepository) Get(ctx context.Context, todoID int) (common.Todo, err
 	return todo, nil
 }
 
-func (tr *TodoRepository) GetAll(ctx context.Context, userID int) ([]common.Todo, error) {
+func (tr *TodoRepository) GetAll(ctx context.Context, userID int, pagination common.Pagination) ([]common.Todo, error) {
 	var todos []common.Todo
 	err := tr.db.SelectContext(ctx, &todos,
 		`select
@@ -82,7 +82,8 @@ func (tr *TodoRepository) GetAll(ctx context.Context, userID int) ([]common.Todo
 		from
 			todos
 		where
-			user_id = $1;`, userID)
+			user_id = $1
+		offset $2 limit $3;`, userID, pagination.CurrentPage, pagination.ItemsPerPage)
 	if err != nil {
 		return []common.Todo{}, err
 	}

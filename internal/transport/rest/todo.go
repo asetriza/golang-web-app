@@ -41,7 +41,6 @@ type getTodoInput struct {
 func (r *REST) getTodo(c *gin.Context) {
 	var input getTodoInput
 	if err := c.BindJSON(&input); err != nil {
-		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -56,13 +55,19 @@ func (r *REST) getTodo(c *gin.Context) {
 }
 
 func (r *REST) getTodos(c *gin.Context) {
+	var input common.Pagination
+	if err := c.BindQuery(&input); err != nil {
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	userID, err := getUserIDFromCtx(c)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	todos, err := r.Service.Todo.GetAll(c.Request.Context(), userID)
+	todos, err := r.Service.Todo.GetAll(c.Request.Context(), userID, input)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return

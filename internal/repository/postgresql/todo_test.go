@@ -92,22 +92,28 @@ func TestAuthorizationRepository_GetAll(t *testing.T) {
 	tr := NewTodoRepository(sqlxDB)
 
 	testTable := []struct {
-		name    string
-		r       *TodoRepository
-		userID  int
-		mock    func()
-		want    []common.Todo
-		wantErr bool
+		name       string
+		r          *TodoRepository
+		userID     int
+		pagination common.Pagination
+		mock       func()
+		want       []common.Todo
+		wantErr    bool
 	}{
 		{
 			name:   "OK",
 			r:      tr,
 			userID: 1,
+			pagination: common.Pagination{
+				CurrentPage:  1,
+				ItemsPerPage: 2,
+			},
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"id", "user_id", "name", "description", "notify_date", "done"}).
-					AddRow(1, 1, "name", "description", 1, false)
+					AddRow(1, 1, "name", "description", 1, false).
+					AddRow(2, 1, "name", "description", 1, false)
 				mock.ExpectQuery("select id, user_id, name, description, notify_date, done from todos").
-					WithArgs(1).
+					WithArgs(1, 0, 2).
 					WillReturnRows(rows)
 			},
 			want: []common.Todo{
@@ -119,17 +125,24 @@ func TestAuthorizationRepository_GetAll(t *testing.T) {
 					NotifyDate:  1,
 					Done:        false,
 				},
+				{
+					ID:          2,
+					UserID:      1,
+					Name:        "name",
+					Description: "description",
+					NotifyDate:  1,
+					Done:        false,
+				},
 			},
 		},
 		{
-			name:   "Empty fields",
+			name:   "Incorrect user id",
 			r:      tr,
 			userID: -1,
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"id", "user_id", "name", "description", "notify_date", "done"})
 				mock.ExpectQuery("select id, user_id, name, description, notify_date, done from todos").
 					WithArgs(1).
-					WillReturnRows(rows)
+					WillReturnError(sql.ErrNoRows)
 			},
 			wantErr: true,
 		},
@@ -138,7 +151,7 @@ func TestAuthorizationRepository_GetAll(t *testing.T) {
 	for _, tc := range testTable {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock()
-			got, err := tc.r.GetAll(context.Background(), tc.userID)
+			got, err := tc.r.GetAll(context.Background(), tc.userID, tc.pagination.CalculateOffset())
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return

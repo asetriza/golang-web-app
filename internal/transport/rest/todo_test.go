@@ -100,3 +100,87 @@ func TestHandler_createTodo(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_getTodos(t *testing.T) {
+	type mockBehavior func(r *mock_service.MockTodo, userID int, pagination common.Pagination)
+
+	testTable := []struct {
+		name         string
+		body         string
+		userID       int
+		mockBehavior mockBehavior
+		setUserID    gin.HandlerFunc
+		pagination   common.Pagination
+		statusCode   int
+		responseBody string
+	}{
+		{
+			name:   "OK",
+			body:   ``,
+			userID: 1,
+			mockBehavior: func(r *mock_service.MockTodo, userID int, pagination common.Pagination) {
+				todo := common.Todo{
+					ID:          0,
+					UserID:      0,
+					Name:        "",
+					Description: "",
+					NotifyDate:  0,
+					Done:        false,
+				}
+				r.EXPECT().GetAll(context.Background(), userID, pagination).Return([]common.Todo{todo}, nil)
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			pagination: common.Pagination{
+				CurrentPage:  1,
+				ItemsPerPage: 2,
+			},
+			statusCode:   http.StatusOK,
+			responseBody: `{"todos":[{"id":0,"userId":0,"name":"","description":"","notifyDate":0,"done":false}]}`,
+		},
+		// {
+		// 	name:         "Internal server error",
+		// 	body:         ``,
+		// 	userID:       1,
+		// 	mockBehavior: func(r *mock_service.MockTodo, userID int, pagination common.Pagination) {},
+		// 	setUserID: func(c *gin.Context) {
+		// 		c.Set("afd", 1)
+		// 	},
+		// 	pagination: common.Pagination{
+		// 		CurrentPage:  1,
+		// 		ItemsPerPage: 2,
+		// 	},
+		// 	statusCode:   http.StatusInternalServerError,
+		// 	responseBody: `{"message":"userCtx not found"}`,
+		// },
+	}
+
+	for _, tc := range testTable {
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			mockServ := mock_service.NewMockTodo(c)
+			tc.mockBehavior(mockServ, tc.userID, tc.pagination)
+
+			service := service.Service{Todo: mockServ}
+			rest := REST{Service: &service}
+
+			// Init Endpoint
+			r := gin.New()
+			r.GET("/api/todo", tc.setUserID, rest.getTodos)
+
+			// Create Request
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", "/api/todo?currentPage=1&itemsPerPage=2", bytes.NewBufferString(tc.body))
+
+			// Make Request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, w.Code, tc.statusCode)
+			assert.Equal(t, w.Body.String(), tc.responseBody)
+		})
+	}
+}
