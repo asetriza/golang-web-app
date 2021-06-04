@@ -21,7 +21,7 @@ dbuild:
 drun:
 	docker run --name=golang-web-app -p $(PORT):$(PORT) golang-web-app
 
-run:
+run: build
 	bin/./main
 
 dup:
