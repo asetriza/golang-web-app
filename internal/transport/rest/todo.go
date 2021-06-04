@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/asetriza/golang-web-app/internal/common"
@@ -12,7 +11,6 @@ import (
 func (r *REST) createTodo(c *gin.Context) {
 	var input common.Todo
 	if err := c.BindJSON(&input); err != nil {
-		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -82,7 +80,6 @@ type updateTodoInput struct {
 func (r *REST) updateTodo(c *gin.Context) {
 	var input common.Todo
 	if err := c.BindJSON(&input); err != nil {
-		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -103,7 +100,6 @@ type deleteTodoInput struct {
 func (r *REST) deleteTodo(c *gin.Context) {
 	var input deleteTodoInput
 	if err := c.BindJSON(&input); err != nil {
-		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
