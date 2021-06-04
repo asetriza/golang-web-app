@@ -48,7 +48,7 @@ func (tr *TodoRepository) Create(ctx context.Context, todo common.Todo) (int, er
 	return id, nil
 }
 
-func (tr *TodoRepository) Get(ctx context.Context, todoID int) (common.Todo, error) {
+func (tr *TodoRepository) Get(ctx context.Context, userID, todoID int) (common.Todo, error) {
 	var todo common.Todo
 	err := tr.db.GetContext(ctx, &todo,
 		`select
@@ -61,7 +61,8 @@ func (tr *TodoRepository) Get(ctx context.Context, todoID int) (common.Todo, err
 		from
 			todos
 		where
-			id = $1;`, todoID)
+			id = $1;
+			and user_id = $2`, todoID, userID)
 	if err != nil {
 		return common.Todo{}, err
 	}

@@ -134,18 +134,18 @@ func (mr *MockTodoMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockTodo) Get(arg0 context.Context, arg1 int) (common.Todo, error) {
+func (m *MockTodo) Get(arg0 context.Context, arg1, arg2 int) (common.Todo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0, arg1)
+	ret := m.ctrl.Call(m, "Get", arg0, arg1, arg2)
 	ret0, _ := ret[0].(common.Todo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockTodoMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTodoMockRecorder) Get(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTodo)(nil).Get), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTodo)(nil).Get), arg0, arg1, arg2)
 }
 
 // GetAll mocks base method.

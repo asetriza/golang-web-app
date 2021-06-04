@@ -16,7 +16,7 @@ type Authorization interface {
 
 type Todo interface {
 	Create(ctx context.Context, todo common.Todo) (int, error)
-	Get(ctx context.Context, todoID int) (common.Todo, error)
+	Get(ctx context.Context, userID, todoID int) (common.Todo, error)
 	GetAll(ctx context.Context, userID int, pagination common.Pagination) ([]common.Todo, error)
 	Update(ctx context.Context, todo common.Todo) error
 	Delete(ctx context.Context, todoID int) error

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/asetriza/golang-web-app/internal/common"
 
@@ -37,13 +38,25 @@ type getTodoInput struct {
 }
 
 func (r *REST) getTodo(c *gin.Context) {
-	var input getTodoInput
-	if err := c.BindJSON(&input); err != nil {
-		newErrorResponce(c, http.StatusBadRequest, err.Error())
+	todoIDParam := c.Param("id")
+	if todoIDParam == "" {
+		newErrorResponce(c, http.StatusBadRequest, "empty id param")
 		return
 	}
 
-	todo, err := r.Service.Todo.Get(c.Request.Context(), input.todoID)
+	todoID, err := strconv.Atoi(todoIDParam)
+	if err != nil {
+		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
+		return
+	}
+
+	userID, err := getUserIDFromCtx(c)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	todo, err := r.Service.Todo.Get(c.Request.Context(), userID, todoID)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
