@@ -184,3 +184,93 @@ func TestHandler_singIn(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_refresh(t *testing.T) {
+	type mockBehavior func(r *mock_service.MockAuthorization, token, refreshToken, clientIP string)
+
+	refresh := refreshInput{
+		Token:        "token",
+		RefreshToken: "refreshToken",
+	}
+
+	testTable := []struct {
+		name         string
+		body         string
+		clientIP     string
+		input        refreshInput
+		mockBehavior mockBehavior
+		statusCode   int
+		responseBody string
+	}{
+		{
+			name:     "OK",
+			body:     `{"token":"token","refreshToken":"refreshToken"}`,
+			input:    refresh,
+			clientIP: "192.0.2.1",
+			mockBehavior: func(r *mock_service.MockAuthorization, token, refreshToken, clientIP string) {
+				r.EXPECT().RefreshCredentials(context.Background(), token, refreshToken, clientIP).Return(service.Credentials{}, nil)
+			},
+			statusCode:   http.StatusOK,
+			responseBody: `{"credentials":{"token":"","refreshToken":""}}`,
+		},
+		{
+			name:         "Empty field token",
+			body:         `{"token":"","refreshToken":"refreshToken"}`,
+			clientIP:     "192.0.2.1",
+			input:        refresh,
+			mockBehavior: func(r *mock_service.MockAuthorization, token, refreshToken, clientIP string) {},
+			statusCode:   http.StatusBadRequest,
+			responseBody: `{"message":"Key: 'refreshInput.Token' Error:Field validation for 'Token' failed on the 'required' tag"}`,
+		},
+		{
+			name:     "Internal server error",
+			body:     `{"token":"token","refreshToken":"refreshToken"}`,
+			clientIP: "192.0.2.1",
+			input:    refresh,
+			mockBehavior: func(r *mock_service.MockAuthorization, token, refreshToken, clientIP string) {
+				r.EXPECT().RefreshCredentials(context.Background(), token, refreshToken, clientIP).Return(service.Credentials{}, errors.New("Internal server error"))
+			},
+			statusCode:   http.StatusInternalServerError,
+			responseBody: `{"message":"Internal server error"}`,
+		},
+		{
+			name:     "Internal server error",
+			body:     `{"token":"token","refreshToken":"refreshToken"}`,
+			clientIP: "192.0.2.1",
+			input:    refresh,
+			mockBehavior: func(r *mock_service.MockAuthorization, token, refreshToken, clientIP string) {
+				r.EXPECT().RefreshCredentials(context.Background(), token, refreshToken, clientIP).Return(service.Credentials{}, service.RefreshTokenExpired)
+			},
+			statusCode:   http.StatusUnauthorized,
+			responseBody: `{"message":"refreshToken expired"}`,
+		},
+	}
+
+	for _, tc := range testTable {
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			mockServ := mock_service.NewMockAuthorization(c)
+			tc.mockBehavior(mockServ, tc.input.Token, tc.input.RefreshToken, tc.clientIP)
+
+			service := service.Service{Authorization: mockServ}
+			rest := REST{Service: &service}
+
+			// Init Endpoint
+			r := gin.New()
+			r.POST("/refresh", rest.refresh)
+
+			// Create Request
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("POST", "/refresh", bytes.NewBufferString(tc.body))
+
+			// Make Request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, w.Code, tc.statusCode)
+			assert.Equal(t, w.Body.String(), tc.responseBody)
+		})
+	}
+}

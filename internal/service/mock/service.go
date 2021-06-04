@@ -149,18 +149,18 @@ func (mr *MockTodoMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // GetAll mocks base method.
-func (m *MockTodo) GetAll(arg0 context.Context, arg1 int) ([]common.Todo, error) {
+func (m *MockTodo) GetAll(arg0 context.Context, arg1 int, arg2 common.Pagination) ([]common.Todo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetAll", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]common.Todo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAll indicates an expected call of GetAll.
-func (mr *MockTodoMockRecorder) GetAll(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTodoMockRecorder) GetAll(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockTodo)(nil).GetAll), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockTodo)(nil).GetAll), arg0, arg1, arg2)
 }
 
 // Update mocks base method.

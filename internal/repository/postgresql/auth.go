@@ -50,7 +50,11 @@ func (ar *AuthorizationRepository) GetUser(ctx context.Context, username, passwo
 	var user common.User
 	err := ar.db.GetContext(ctx, &user,
 		`select
-			id
+			id,
+			name,
+			username,
+			email,
+			password
 		from
 			users
 		where
