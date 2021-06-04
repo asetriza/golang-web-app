@@ -142,7 +142,7 @@ func TestHandler_getTodos(t *testing.T) {
 			responseBody: `{"todos":[{"id":0,"userId":0,"name":"","description":"","notifyDate":0,"done":false}]}`,
 		},
 		{
-			name:   "OK",
+			name:   "GetAll todos error",
 			body:   ``,
 			userID: 1,
 			mockBehavior: func(r *mock_service.MockTodo, userID int, pagination common.Pagination) {
