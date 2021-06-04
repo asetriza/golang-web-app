@@ -61,8 +61,8 @@ func (tr *TodoRepository) Get(ctx context.Context, userID, todoID int) (common.T
 		from
 			todos
 		where
-			id = $1;
-			and user_id = $2`, todoID, userID)
+			id = $1
+			and user_id = $2;`, todoID, userID)
 	if err != nil {
 		return common.Todo{}, err
 	}
