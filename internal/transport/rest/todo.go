@@ -88,10 +88,14 @@ func (r *REST) getTodos(c *gin.Context) {
 }
 
 type updateTodoInput struct {
+	Name        *string `json:"name" binding:"required,min=1,max=255" db:"name"`
+	Description *string `json:"description" binding:"required,min=1,max=10000" db:"description"`
+	NotifyDate  *int64  `json:"notifyDate" binding:"required,min=1" db:"notify_date"` // in Unix time format
+	Done        *bool   `json:"done" db:"done"`
 }
 
 func (r *REST) updateTodo(c *gin.Context) {
-	var input common.Todo
+	var input updateTodoInput
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
