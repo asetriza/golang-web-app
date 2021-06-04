@@ -87,21 +87,22 @@ func (r *REST) getTodos(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"todos": todos})
 }
 
-type updateTodoInput struct {
-	Name        *string `json:"name" binding:"required,min=1,max=255" db:"name"`
-	Description *string `json:"description" binding:"required,min=1,max=10000" db:"description"`
-	NotifyDate  *int64  `json:"notifyDate" binding:"required,min=1" db:"notify_date"` // in Unix time format
-	Done        *bool   `json:"done" db:"done"`
-}
-
 func (r *REST) updateTodo(c *gin.Context) {
-	var input updateTodoInput
+	var input common.Todo
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	err := r.Service.Todo.Update(c.Request.Context(), input)
+	userID, err := getUserIDFromCtx(c)
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	input.UserID = userID
+
+	err = r.Service.Todo.Update(c.Request.Context(), input)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
