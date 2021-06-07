@@ -43,7 +43,7 @@ func TestHandler_singUp(t *testing.T) {
 			mockBehavior: func(r *mock_service.MockAuthorization, input common.User, clientIP string) {
 				r.EXPECT().CreateUser(context.Background(), input, clientIP).Return(service.Credentials{}, nil)
 			},
-			statusCode:   http.StatusOK,
+			statusCode:   http.StatusCreated,
 			responseBody: `{"credentials":{"token":"","refreshToken":""}}`,
 		},
 		{

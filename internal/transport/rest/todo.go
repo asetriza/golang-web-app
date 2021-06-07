@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/asetriza/golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,10 +59,15 @@ func (r *REST) getTodo(c *gin.Context) {
 	}
 
 	todo, err := r.Service.Todo.Get(c.Request.Context(), userID, todoID)
-	switch err {
-	case sql.ErrNoRows:
-		newErrorResponce(c, http.StatusNotFound, err.Error())
-		return
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{"todo": todo})
@@ -121,8 +127,17 @@ func (r *REST) updateTodo(c *gin.Context) {
 
 	err = r.Service.Todo.Update(c.Request.Context(), input)
 	if err != nil {
-		newErrorResponce(c, http.StatusInternalServerError, err.Error())
-		return
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		case service.AccessDenied:
+			newErrorResponce(c, http.StatusForbidden, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{"id": input.ID})

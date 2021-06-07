@@ -3,6 +3,7 @@ package rest
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -231,13 +232,13 @@ func TestHandler_getTodo(t *testing.T) {
 			body:   ``,
 			userID: 1,
 			mockBehavior: func(r *mock_service.MockTodo, userID, todoID int) {
-				r.EXPECT().Get(context.Background(), userID, todoID).Return(common.Todo{}, errors.New("Internal server error"))
+				r.EXPECT().Get(context.Background(), userID, todoID).Return(common.Todo{}, sql.ErrNoRows)
 			},
 			setUserID: func(c *gin.Context) {
 				c.Set(userCtx, 1)
 			},
-			statusCode:   http.StatusInternalServerError,
-			responseBody: `{"message":"Internal server error"}`,
+			statusCode:   http.StatusNotFound,
+			responseBody: `{"message":"sql: no rows in result set"}`,
 		},
 		{
 			name:         "user id error",
