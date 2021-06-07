@@ -89,6 +89,21 @@ func (r *REST) getTodos(c *gin.Context) {
 
 func (r *REST) updateTodo(c *gin.Context) {
 	var input common.Todo
+
+	todoIDParam := c.Param("id")
+	if todoIDParam == "" {
+		newErrorResponce(c, http.StatusBadRequest, "empty id param")
+		return
+	}
+
+	todoID, err := strconv.Atoi(todoIDParam)
+	if err != nil {
+		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
+		return
+	}
+
+	input.ID = todoID
+
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
@@ -108,7 +123,7 @@ func (r *REST) updateTodo(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"id": 1})
+	c.JSON(http.StatusOK, map[string]interface{}{"id": input.ID})
 }
 
 type deleteTodoInput struct {

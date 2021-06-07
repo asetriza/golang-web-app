@@ -8,3 +8,11 @@ type Todo struct {
 	NotifyDate  int64  `json:"notifyDate" binding:"required,min=1" db:"notify_date"` // in Unix time format
 	Done        bool   `json:"done" db:"done"`
 }
+
+func (t *Todo) IsOwner(userID int) bool {
+	if t.UserID == userID {
+		return true
+	}
+
+	return false
+}
