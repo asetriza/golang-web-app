@@ -88,8 +88,14 @@ func (r *REST) getTodos(c *gin.Context) {
 
 	todos, err := r.Service.Todo.GetAll(c.Request.Context(), userID, input)
 	if err != nil {
-		newErrorResponce(c, http.StatusInternalServerError, err.Error())
-		return
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{"todos": todos})
@@ -110,8 +116,6 @@ func (r *REST) updateTodo(c *gin.Context) {
 		return
 	}
 
-	input.ID = todoID
-
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
@@ -123,6 +127,7 @@ func (r *REST) updateTodo(c *gin.Context) {
 		return
 	}
 
+	input.ID = todoID
 	input.UserID = userID
 
 	err = r.Service.Todo.Update(c.Request.Context(), input)
@@ -143,14 +148,16 @@ func (r *REST) updateTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"id": input.ID})
 }
 
-type deleteTodoInput struct {
-	TodoID int `json:"todoId" binding:"required"`
-}
-
 func (r *REST) deleteTodo(c *gin.Context) {
-	var input deleteTodoInput
-	if err := c.BindJSON(&input); err != nil {
-		newErrorResponce(c, http.StatusBadRequest, err.Error())
+	todoIDParam := c.Param("id")
+	if todoIDParam == "" {
+		newErrorResponce(c, http.StatusBadRequest, "empty id param")
+		return
+	}
+
+	todoID, err := strconv.Atoi(todoIDParam)
+	if err != nil {
+		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
 		return
 	}
 
@@ -160,11 +167,20 @@ func (r *REST) deleteTodo(c *gin.Context) {
 		return
 	}
 
-	err = r.Service.Todo.Delete(c.Request.Context(), userID, input.TodoID)
+	err = r.Service.Todo.Delete(c.Request.Context(), userID, todoID)
 	if err != nil {
-		newErrorResponce(c, http.StatusInternalServerError, err.Error())
-		return
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		case service.AccessDenied:
+			newErrorResponce(c, http.StatusForbidden, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"id": input.TodoID})
+	c.JSON(http.StatusOK, map[string]interface{}{"id": todoID})
 }

@@ -120,13 +120,20 @@ func (tr *TodoRepository) Update(ctx context.Context, todo common.Todo) error {
 }
 
 func (tr *TodoRepository) Delete(ctx context.Context, userID, todoID int) error {
-	rows, err := tr.db.QueryContext(ctx,
+	res, err := tr.db.ExecContext(ctx,
 		`delete from todos where id = $1 and user_id = $2;`, todoID, userID)
 	if err != nil {
 		return err
 	}
 
-	rows.Close()
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("Rows not affected")
+	}
 
 	return nil
 }

@@ -55,5 +55,14 @@ func (ts *TodoService) getUserIDFromTodo(ctx context.Context, todoID int) (int, 
 }
 
 func (ts *TodoService) Delete(ctx context.Context, userID, todoID int) error {
+	userIDFromTodo, err := ts.getUserIDFromTodo(ctx, todoID)
+	if err != nil {
+		return err
+	}
+
+	if userIDFromTodo != userID {
+		return AccessDenied
+	}
+
 	return ts.Repository.Delete(ctx, userID, todoID)
 }
