@@ -24,7 +24,7 @@ func (r *REST) signUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
+	c.JSON(http.StatusCreated, map[string]interface{}{"credentials": credentials})
 }
 
 type signInInput struct {
