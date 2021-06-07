@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -57,8 +58,9 @@ func (r *REST) getTodo(c *gin.Context) {
 	}
 
 	todo, err := r.Service.Todo.Get(c.Request.Context(), userID, todoID)
-	if err != nil {
-		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+	switch err {
+	case sql.ErrNoRows:
+		newErrorResponce(c, http.StatusNotFound, err.Error())
 		return
 	}
 
