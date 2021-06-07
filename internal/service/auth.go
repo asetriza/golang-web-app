@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/asetriza/golang-web-app/internal/common"
@@ -89,7 +88,6 @@ func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, r
 func (as *AuthorizationService) updateUserSession(ctx context.Context, userID int) (Credentials, error) {
 	token, err := as.TokenManager.NewToken(userID)
 	if err != nil {
-		log.Println(err)
 		return Credentials{}, err
 	}
 
@@ -108,7 +106,6 @@ func (as *AuthorizationService) updateUserSession(ctx context.Context, userID in
 func (as *AuthorizationService) createUserSession(ctx context.Context, userID int, userIP string) (Credentials, error) {
 	token, err := as.TokenManager.NewToken(userID)
 	if err != nil {
-		log.Println(err)
 		return Credentials{}, err
 	}
 
