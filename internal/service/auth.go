@@ -77,7 +77,6 @@ func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, r
 		if err == sql.ErrNoRows {
 			return Credentials{}, RefreshTokenExpired
 		}
-		log.Println(err)
 	}
 
 	if userSession.RefreshTokenTTL > time.Now().UnixNano() && userSession.UserIP == userIP {
