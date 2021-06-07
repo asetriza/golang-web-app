@@ -6,11 +6,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/asetriza/golang-web-app/internal/common"
 	"github.com/asetriza/golang-web-app/internal/repository"
 	"github.com/asetriza/golang-web-app/pkg/auth"
-	"log"
-	"time"
 )
 
 var (
@@ -67,7 +68,6 @@ func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, r
 	userID, err := as.TokenManager.ParseToken(token)
 	if err != nil {
 		if err.Error() != "Token is expired" {
-			log.Println(err)
 			return Credentials{}, err
 		}
 	}
@@ -75,14 +75,12 @@ func (as *AuthorizationService) RefreshCredentials(ctx context.Context, token, r
 	userSession, err := as.Repository.GetUserSession(ctx, userID, refreshToken)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Println(err)
 			return Credentials{}, RefreshTokenExpired
 		}
 		log.Println(err)
 	}
 
 	if userSession.RefreshTokenTTL > time.Now().UnixNano() && userSession.UserIP == userIP {
-		log.Println(RefreshTokenExpired)
 		return Credentials{}, RefreshTokenExpired
 	}
 
