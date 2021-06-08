@@ -65,7 +65,7 @@ func TestTodoRepository_Create(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "OK",
+			name: "scan error",
 			r:    tr,
 			user: common.Todo{
 				UserID:      1,
