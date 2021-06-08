@@ -262,11 +262,9 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 			todoID: 1,
 			userID: 1,
 			mock: func() {
-				rows := sqlmock.NewRows([]string{})
-				mock.ExpectQuery("delete from todos").
+				mock.ExpectExec("delete from todos").
 					WithArgs(1, 1).
-					WillReturnRows(rows).
-					RowsWillBeClosed()
+					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 		},
 		{
@@ -275,7 +273,8 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 			todoID: -1,
 			userID: 1,
 			mock: func() {
-				mock.ExpectQuery("delete from todos").WithArgs(-1).WillReturnError(sql.ErrNoRows)
+				mock.ExpectExec("delete from todos").
+					WithArgs(-1, 1).WillReturnError(sql.ErrNoRows)
 			},
 			wantErr: true,
 		},
