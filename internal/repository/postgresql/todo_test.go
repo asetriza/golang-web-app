@@ -3,6 +3,7 @@ package postgesql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -266,6 +267,30 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 					WithArgs(1, 1).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
+		},
+		{
+			name:   "not deleted",
+			r:      tr,
+			todoID: -1,
+			userID: 1,
+			mock: func() {
+				mock.ExpectExec("delete from todos").
+					WithArgs(-1, 1).
+					WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Error no row",
+			r:      tr,
+			todoID: -1,
+			userID: 1,
+			mock: func() {
+				mock.ExpectExec("delete from todos").
+					WithArgs(-1, 1).
+					WillReturnResult(sqlmock.NewErrorResult(errors.New("some error")))
+			},
+			wantErr: true,
 		},
 		{
 			name:   "Error no row",
