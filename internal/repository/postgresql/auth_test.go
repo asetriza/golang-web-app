@@ -42,10 +42,10 @@ func TestAuthorizationRepository_CreateUser(t *testing.T) {
 				Password: "password",
 			},
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
+				rows := sqlmock.NewRows([]string{"id"}).AddRow("asd")
 				mock.ExpectQuery("insert into users").WithArgs("name", "username", "email", "password").WillReturnRows(rows)
 			},
-			want: 1,
+			wantErr: true,
 		},
 		{
 			name: "Empty fields",
@@ -61,6 +61,21 @@ func TestAuthorizationRepository_CreateUser(t *testing.T) {
 				mock.ExpectQuery("insert into users").WithArgs("name", "username", "email", "password").WillReturnRows(rows)
 			},
 			wantErr: true,
+		},
+		{
+			name: "OK",
+			r:    ar,
+			user: common.User{
+				Name:     "name",
+				Username: "username",
+				Email:    "email",
+				Password: "password",
+			},
+			mock: func() {
+				rows := sqlmock.NewRows([]string{"id"}).AddRow(0)
+				mock.ExpectQuery("insert into users").WithArgs("name", "username", "email", "password").WillReturnRows(rows)
+			},
+			want: 0,
 		},
 	}
 
