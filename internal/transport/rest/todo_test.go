@@ -215,13 +215,13 @@ func TestHandler_getTodos(t *testing.T) {
 }
 
 func TestHandler_getTodo(t *testing.T) {
-	type mockBehavior func(r *mock_service.MockTodo, userID, todoID int)
+	type mockBehavior func(r *mock_service.MockTodo, userID int, todoID interface{})
 
 	testTable := []struct {
 		name         string
 		body         string
 		userID       int
-		todoID       int
+		todoID       interface{}
 		mockBehavior mockBehavior
 		setUserID    gin.HandlerFunc
 		statusCode   int
@@ -231,7 +231,8 @@ func TestHandler_getTodo(t *testing.T) {
 			name:   "OK",
 			body:   ``,
 			userID: 1,
-			mockBehavior: func(r *mock_service.MockTodo, userID, todoID int) {
+			todoID: 1,
+			mockBehavior: func(r *mock_service.MockTodo, userID int, todoID interface{}) {
 				r.EXPECT().Get(context.Background(), userID, todoID).Return(common.Todo{}, nil)
 			},
 			setUserID: func(c *gin.Context) {
@@ -244,7 +245,8 @@ func TestHandler_getTodo(t *testing.T) {
 			name:   "Get todo error",
 			body:   ``,
 			userID: 1,
-			mockBehavior: func(r *mock_service.MockTodo, userID, todoID int) {
+			todoID: 1,
+			mockBehavior: func(r *mock_service.MockTodo, userID int, todoID interface{}) {
 				r.EXPECT().Get(context.Background(), userID, todoID).Return(common.Todo{}, sql.ErrNoRows)
 			},
 			setUserID: func(c *gin.Context) {
@@ -257,12 +259,39 @@ func TestHandler_getTodo(t *testing.T) {
 			name:         "user id error",
 			body:         ``,
 			userID:       1,
-			mockBehavior: func(r *mock_service.MockTodo, userID, todoID int) {},
+			todoID:       1,
+			mockBehavior: func(r *mock_service.MockTodo, userID int, todoID interface{}) {},
 			setUserID: func(c *gin.Context) {
 				c.Set("afd", 1)
 			},
 			statusCode:   http.StatusInternalServerError,
 			responseBody: `{"message":"userCtx not found"}`,
+		},
+		{
+			name:         "todo id param string error",
+			body:         ``,
+			userID:       1,
+			todoID:       "asd",
+			mockBehavior: func(r *mock_service.MockTodo, userID int, todoID interface{}) {},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusBadRequest,
+			responseBody: `{"message":"id param must be int"}`,
+		},
+		{
+			name:   "internal server error",
+			body:   ``,
+			userID: 1,
+			todoID: 1,
+			mockBehavior: func(r *mock_service.MockTodo, userID int, todoID interface{}) {
+				r.EXPECT().Get(context.Background(), userID, todoID).Return(common.Todo{}, errors.New("internal server error"))
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusInternalServerError,
+			responseBody: `{"message":"internal server error"}`,
 		},
 	}
 
@@ -283,7 +312,8 @@ func TestHandler_getTodo(t *testing.T) {
 
 			// Create Request
 			w := httptest.NewRecorder()
-			url := fmt.Sprintf("/api/todo/%d", tc.todoID)
+			url := fmt.Sprintf("/api/todo/%v", tc.todoID)
+			fmt.Println(url)
 			req := httptest.NewRequest("GET", url, bytes.NewBufferString(tc.body))
 
 			// Make Request
