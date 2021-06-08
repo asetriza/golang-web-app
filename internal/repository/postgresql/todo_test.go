@@ -291,3 +291,107 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 		})
 	}
 }
+
+func TestAuthorizationRepository_Update(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	defer sqlxDB.Close()
+
+	tr := NewTodoRepository(sqlxDB)
+
+	testTable := []struct {
+		name    string
+		r       *TodoRepository
+		todo    common.Todo
+		mock    func()
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			r:    tr,
+			todo: common.Todo{
+				ID:          1,
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mock: func() {
+				mock.ExpectExec("update todos set").
+					WithArgs(1, 1, "name", "description", 1, false, 1).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+		},
+		{
+			name: "Rows not affected",
+			r:    tr,
+			todo: common.Todo{
+				ID:          1,
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mock: func() {
+				mock.ExpectExec("update todos set").
+					WithArgs(1, 1, "name", "description", 1, false, 1).
+					WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			wantErr: true,
+		},
+		{
+			name: "sql no result",
+			r:    tr,
+			todo: common.Todo{
+				ID:          300,
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mock: func() {
+				mock.ExpectExec("update todos set").
+					WithArgs(1, 1, "name", "description", 1, false, 1).
+					WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			wantErr: true,
+		},
+		{
+			name: "sql no result",
+			r:    tr,
+			todo: common.Todo{
+				ID:          300,
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mock: func() {
+				mock.ExpectExec("update todos set").
+					WithArgs(1, 1, "name", "description", 1, false, 1).
+					WillReturnError(sql.ErrNoRows)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testTable {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.mock()
+			err := tc.r.Update(context.Background(), tc.todo)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
+				return
+			}
+		})
+	}
+}
