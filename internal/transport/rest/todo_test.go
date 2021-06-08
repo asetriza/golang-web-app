@@ -431,3 +431,76 @@ func TestHandler_updateTodo(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_deleteTodo(t *testing.T) {
+	type mockBehavior func(r *mock_service.MockTodo, userID, todoID int)
+
+	testTable := []struct {
+		name         string
+		body         string
+		todoID       int
+		userID       int
+		mockBehavior mockBehavior
+		setUserID    gin.HandlerFunc
+		statusCode   int
+		responseBody string
+	}{
+		{
+			name:   "OK",
+			body:   ``,
+			todoID: 1,
+			userID: 1,
+			mockBehavior: func(r *mock_service.MockTodo, userID, todoID int) {
+				r.EXPECT().Delete(context.Background(), userID, todoID).Return(nil)
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusOK,
+			responseBody: `{"id":1}`,
+		},
+		{
+			name:   "OK",
+			body:   ``,
+			todoID: 1,
+			userID: 1,
+			mockBehavior: func(r *mock_service.MockTodo, userID, todoID int) {
+				r.EXPECT().Delete(context.Background(), userID, todoID).Return(errors.New("internal server error"))
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusInternalServerError,
+			responseBody: `{"message":"internal server error"}`,
+		},
+	}
+
+	for _, tc := range testTable {
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			mockServ := mock_service.NewMockTodo(c)
+			tc.mockBehavior(mockServ, tc.userID, tc.todoID)
+
+			service := service.Service{Todo: mockServ}
+			rest := REST{Service: &service}
+
+			// Init Endpoint
+			r := gin.New()
+			r.DELETE("/api/todo/:id", tc.setUserID, rest.deleteTodo)
+
+			// Create Request
+			w := httptest.NewRecorder()
+			url := fmt.Sprintf("/api/todo/%d", tc.todoID)
+			req := httptest.NewRequest("DELETE", url, bytes.NewBufferString(tc.body))
+
+			// Make Request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, w.Code, tc.statusCode)
+			assert.Equal(t, w.Body.String(), tc.responseBody)
+		})
+	}
+}
