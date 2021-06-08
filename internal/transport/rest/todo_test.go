@@ -52,6 +52,19 @@ func TestHandler_createTodo(t *testing.T) {
 			responseBody: `{"id":1}`,
 		},
 		{
+			name:  "OK",
+			body:  `{"name":"name","description":"description","notifyDate":1}`,
+			input: todo,
+			mockBehavior: func(r *mock_service.MockTodo, todo common.Todo) {
+				r.EXPECT().Create(context.Background(), todo).Return(0, errors.New("internal server error"))
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusInternalServerError,
+			responseBody: `{"message":"internal server error"}`,
+		},
+		{
 			name:         "Empty fields",
 			body:         `{"name":"","description":"description","notifyDate":1}`,
 			input:        todo,
