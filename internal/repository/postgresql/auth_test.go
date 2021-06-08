@@ -3,6 +3,7 @@ package postgesql
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -68,10 +69,12 @@ func TestAuthorizationRepository_CreateUser(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.CreateUser(context.Background(), tc.user)
 			if (err != nil) != tc.wantErr {
+				fmt.Println(tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && got != tc.want {
+				fmt.Println(tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 			}
 		})
@@ -151,10 +154,12 @@ func TestAuthorizationRepository_CreateUserSession(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.CreateUserSession(context.Background(), tc.userID, tc.userIP, tc.refreshToken, tc.refreshTokenTTL)
 			if (err != nil) != tc.wantErr {
+				fmt.Println(tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && got != tc.want {
+				fmt.Println(tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 			}
 		})
@@ -230,10 +235,12 @@ func TestAuthorizationRepository_UpdateUserSession(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.UpdateUserSession(context.Background(), tc.userID, tc.refreshToken, tc.refreshTokenTTL)
 			if (err != nil) != tc.wantErr {
+				fmt.Println(tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && got != tc.want {
+				fmt.Println(tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 			}
 		})
@@ -299,10 +306,12 @@ func TestAuthorizationRepository_GetUser(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.GetUser(context.Background(), tc.username, tc.password)
 			if (err != nil) != tc.wantErr {
+				fmt.Println(tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tc.want) {
+				fmt.Println(tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 			}
 		})
@@ -357,10 +366,12 @@ func TestAuthorizationRepository_GetUserSession(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.GetUserSession(context.Background(), tc.userID, tc.refreshToken)
 			if (err != nil) != tc.wantErr {
+				fmt.Println(tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tc.want) {
+				fmt.Println(tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 			}
 		})
