@@ -379,6 +379,27 @@ func TestHandler_updateTodo(t *testing.T) {
 			statusCode:   http.StatusBadRequest,
 			responseBody: `{"message":"Key: 'Todo.Description' Error:Field validation for 'Description' failed on the 'required' tag"}`,
 		},
+		{
+			name:   "OK",
+			body:   `{"name":"name","description":"description","notifyDate":1,"done":false}`,
+			todoID: 1,
+			todo: common.Todo{
+				ID:          1,
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mockBehavior: func(r *mock_service.MockTodo, todo common.Todo) {
+				r.EXPECT().Update(context.Background(), todo).Return(errors.New("internal server error"))
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusInternalServerError,
+			responseBody: `{"message":"internal server error"}`,
+		},
 	}
 
 	for _, tc := range testTable {
