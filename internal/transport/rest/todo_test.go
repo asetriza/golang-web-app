@@ -325,3 +325,88 @@ func TestHandler_getTodo(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_updateTodo(t *testing.T) {
+	type mockBehavior func(r *mock_service.MockTodo, todo common.Todo)
+
+	testTable := []struct {
+		name         string
+		body         string
+		todoID       int
+		todo         common.Todo
+		mockBehavior mockBehavior
+		setUserID    gin.HandlerFunc
+		statusCode   int
+		responseBody string
+	}{
+		{
+			name:   "OK",
+			body:   `{"name":"name","description":"description","notifyDate":1,"done":false}`,
+			todoID: 1,
+			todo: common.Todo{
+				ID:          1,
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mockBehavior: func(r *mock_service.MockTodo, todo common.Todo) {
+				r.EXPECT().Update(context.Background(), todo).Return(nil)
+			},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusOK,
+			responseBody: `{"id":1}`,
+		},
+		{
+			name:   "OK",
+			body:   `{"name":"name","notifyDate":1,"done":false}`,
+			todoID: 1,
+			todo: common.Todo{
+				ID:          1,
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mockBehavior: func(r *mock_service.MockTodo, todo common.Todo) {},
+			setUserID: func(c *gin.Context) {
+				c.Set(userCtx, 1)
+			},
+			statusCode:   http.StatusBadRequest,
+			responseBody: `{"message":"Key: 'Todo.Description' Error:Field validation for 'Description' failed on the 'required' tag"}`,
+		},
+	}
+
+	for _, tc := range testTable {
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			mockServ := mock_service.NewMockTodo(c)
+			tc.mockBehavior(mockServ, tc.todo)
+
+			service := service.Service{Todo: mockServ}
+			rest := REST{Service: &service}
+
+			// Init Endpoint
+			r := gin.New()
+			r.PUT("/api/todo/:id", tc.setUserID, rest.updateTodo)
+
+			// Create Request
+			w := httptest.NewRecorder()
+			url := fmt.Sprintf("/api/todo/%d", tc.todoID)
+			req := httptest.NewRequest("PUT", url, bytes.NewBufferString(tc.body))
+
+			// Make Request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, w.Code, tc.statusCode)
+			assert.Equal(t, w.Body.String(), tc.responseBody)
+		})
+	}
+}
