@@ -2,8 +2,11 @@ package postgesql
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/asetriza/golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/pkg/database/postgresql"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -93,17 +96,57 @@ func (tr *TodoRepository) GetAll(ctx context.Context, userID int, pagination com
 }
 
 func (tr *TodoRepository) Update(ctx context.Context, todo common.Todo) error {
-	return nil
-}
+	queryString := fmt.Sprintf(`update todos set
+									%s
+								where
+									id = :id`,
+		postgresql.UpdateConditionFromStruct(&todo))
 
-func (tr *TodoRepository) Delete(ctx context.Context, todoID int) error {
-	rows, err := tr.db.QueryContext(ctx,
-		`delete from todos where id = $1;`, todoID)
+	res, err := tr.db.NamedExecContext(ctx, queryString, todo)
 	if err != nil {
 		return err
 	}
 
-	rows.Close()
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("Rows not affected")
+	}
 
 	return nil
+}
+
+func (tr *TodoRepository) Delete(ctx context.Context, userID, todoID int) error {
+	res, err := tr.db.ExecContext(ctx,
+		`delete from todos where id = $1 and user_id = $2;`, todoID, userID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("Rows not affected")
+	}
+
+	return nil
+}
+
+func (tr *TodoRepository) GetUserIDFromTodo(ctx context.Context, todoID int) (int, error) {
+	row := tr.db.QueryRowContext(ctx,
+		`select user_id from todos where id = $1`,
+		todoID)
+
+	var userID int
+	if err := row.Scan(&userID); err != nil {
+		return 0, err
+	}
+
+	return userID, nil
 }

@@ -22,7 +22,8 @@ type Todo interface {
 	Get(ctx context.Context, userID, todoID int) (common.Todo, error)
 	GetAll(ctx context.Context, userID int, pagination common.Pagination) ([]common.Todo, error)
 	Update(ctx context.Context, todo common.Todo) error
-	Delete(ctx context.Context, todoID int) error
+	Delete(ctx context.Context, userID, todoID int) error
+	GetUserIDFromTodo(ctx context.Context, todoID int) (int, error)
 }
 
 type Repository struct {

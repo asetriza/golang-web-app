@@ -1,10 +1,12 @@
 package rest
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/asetriza/golang-web-app/internal/common"
+	"github.com/asetriza/golang-web-app/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,8 +60,14 @@ func (r *REST) getTodo(c *gin.Context) {
 
 	todo, err := r.Service.Todo.Get(c.Request.Context(), userID, todoID)
 	if err != nil {
-		newErrorResponce(c, http.StatusInternalServerError, err.Error())
-		return
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{"todo": todo})
@@ -80,48 +88,99 @@ func (r *REST) getTodos(c *gin.Context) {
 
 	todos, err := r.Service.Todo.GetAll(c.Request.Context(), userID, input)
 	if err != nil {
-		newErrorResponce(c, http.StatusInternalServerError, err.Error())
-		return
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{"todos": todos})
 }
 
-type updateTodoInput struct {
-}
-
 func (r *REST) updateTodo(c *gin.Context) {
 	var input common.Todo
+
+	todoIDParam := c.Param("id")
+	if todoIDParam == "" {
+		newErrorResponce(c, http.StatusBadRequest, "empty id param")
+		return
+	}
+
+	todoID, err := strconv.Atoi(todoIDParam)
+	if err != nil {
+		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
+		return
+	}
+
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	err := r.Service.Todo.Update(c.Request.Context(), input)
+	userID, err := getUserIDFromCtx(c)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"id": 1})
-}
+	input.ID = todoID
+	input.UserID = userID
 
-type deleteTodoInput struct {
-	TodoID int `json:"todoId" binding:"required"`
+	err = r.Service.Todo.Update(c.Request.Context(), input)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		case service.AccessDenied:
+			newErrorResponce(c, http.StatusForbidden, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"id": input.ID})
 }
 
 func (r *REST) deleteTodo(c *gin.Context) {
-	var input deleteTodoInput
-	if err := c.BindJSON(&input); err != nil {
-		newErrorResponce(c, http.StatusBadRequest, err.Error())
+	todoIDParam := c.Param("id")
+	if todoIDParam == "" {
+		newErrorResponce(c, http.StatusBadRequest, "empty id param")
 		return
 	}
 
-	err := r.Service.Todo.Delete(c.Request.Context(), input.TodoID)
+	todoID, err := strconv.Atoi(todoIDParam)
+	if err != nil {
+		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
+		return
+	}
+
+	userID, err := getUserIDFromCtx(c)
 	if err != nil {
 		newErrorResponce(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"id": input.TodoID})
+	err = r.Service.Todo.Delete(c.Request.Context(), userID, todoID)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			newErrorResponce(c, http.StatusNotFound, err.Error())
+			return
+		case service.AccessDenied:
+			newErrorResponce(c, http.StatusForbidden, err.Error())
+			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{"id": todoID})
 }

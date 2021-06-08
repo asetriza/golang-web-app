@@ -120,17 +120,17 @@ func (mr *MockTodoMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockTodo) Delete(arg0 context.Context, arg1 int) error {
+func (m *MockTodo) Delete(arg0 context.Context, arg1, arg2 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockTodoMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTodoMockRecorder) Delete(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTodo)(nil).Delete), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTodo)(nil).Delete), arg0, arg1, arg2)
 }
 
 // Get mocks base method.

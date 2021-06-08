@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/asetriza/golang-web-app/internal/common"
 	"github.com/asetriza/golang-web-app/internal/repository"
@@ -29,10 +30,39 @@ func (ts *TodoService) GetAll(ctx context.Context, userID int, pagination common
 	return ts.Repository.GetAll(ctx, userID, pagination.CalculateOffset())
 }
 
+var AccessDenied = errors.New("access denied")
+
 func (ts *TodoService) Update(ctx context.Context, todo common.Todo) error {
+	userID, err := ts.getUserIDFromTodo(ctx, todo.ID)
+	if err != nil {
+		return err
+	}
+
+	if !todo.IsOwner(userID) {
+		return AccessDenied
+	}
+
 	return ts.Repository.Update(ctx, todo)
 }
 
-func (ts *TodoService) Delete(ctx context.Context, todoID int) error {
-	return ts.Repository.Delete(ctx, todoID)
+func (ts *TodoService) getUserIDFromTodo(ctx context.Context, todoID int) (int, error) {
+	userID, err := ts.Repository.GetUserIDFromTodo(ctx, todoID)
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
+}
+
+func (ts *TodoService) Delete(ctx context.Context, userID, todoID int) error {
+	userIDFromTodo, err := ts.getUserIDFromTodo(ctx, todoID)
+	if err != nil {
+		return err
+	}
+
+	if userIDFromTodo != userID {
+		return AccessDenied
+	}
+
+	return ts.Repository.Delete(ctx, userID, todoID)
 }

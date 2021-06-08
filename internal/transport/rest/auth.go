@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/asetriza/golang-web-app/internal/common"
@@ -24,7 +23,7 @@ func (r *REST) signUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
+	c.JSON(http.StatusCreated, map[string]interface{}{"credentials": credentials})
 }
 
 type signInInput struct {
@@ -58,19 +57,20 @@ func (r *REST) refresh(c *gin.Context) {
 	var input refreshInput
 
 	if err := c.BindJSON(&input); err != nil {
-		log.Println(err)
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	credentials, err := r.Service.Authorization.RefreshCredentials(c.Request.Context(), input.Token, input.RefreshToken, c.ClientIP())
 	if err != nil {
-		if err == service.RefreshTokenExpired {
+		switch err {
+		case service.RefreshTokenExpired:
 			newErrorResponce(c, http.StatusUnauthorized, err.Error())
 			return
+		default:
+			newErrorResponce(c, http.StatusInternalServerError, err.Error())
+			return
 		}
-		newErrorResponce(c, http.StatusInternalServerError, err.Error())
-		return
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{"credentials": credentials})
