@@ -281,7 +281,7 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:   "Error no row",
+			name:   "result error",
 			r:      tr,
 			todoID: -1,
 			userID: 1,
@@ -299,7 +299,8 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 			userID: 1,
 			mock: func() {
 				mock.ExpectExec("delete from todos").
-					WithArgs(-1, 1).WillReturnError(sql.ErrNoRows)
+					WithArgs(-1, 1).
+					WillReturnError(sql.ErrNoRows)
 			},
 			wantErr: true,
 		},
@@ -354,7 +355,7 @@ func TestAuthorizationRepository_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "Rows not affected",
+			name: "not updated",
 			r:    tr,
 			todo: common.Todo{
 				ID:          1,
@@ -372,7 +373,7 @@ func TestAuthorizationRepository_Update(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "sql no result",
+			name: "result error",
 			r:    tr,
 			todo: common.Todo{
 				ID:          300,
@@ -385,7 +386,7 @@ func TestAuthorizationRepository_Update(t *testing.T) {
 			mock: func() {
 				mock.ExpectExec("update todos set").
 					WithArgs(1, 1, "name", "description", 1, false, 1).
-					WillReturnResult(sqlmock.NewResult(0, 0))
+					WillReturnResult(sqlmock.NewErrorResult(errors.New("some error")))
 			},
 			wantErr: true,
 		},
