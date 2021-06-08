@@ -64,6 +64,22 @@ func TestTodoRepository_Create(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "OK",
+			r:    tr,
+			user: common.Todo{
+				UserID:      1,
+				Name:        "name",
+				Description: "description",
+				NotifyDate:  1,
+				Done:        false,
+			},
+			mock: func() {
+				rows := sqlmock.NewRows([]string{"id"}).AddRow("asd")
+				mock.ExpectQuery("insert into todos").WithArgs(1, "name", "description", 1, false).WillReturnRows(rows)
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range testTable {
@@ -384,7 +400,7 @@ func TestAuthorizationRepository_Update(t *testing.T) {
 			name: "result error",
 			r:    tr,
 			todo: common.Todo{
-				ID:          300,
+				ID:          1,
 				UserID:      1,
 				Name:        "name",
 				Description: "description",
