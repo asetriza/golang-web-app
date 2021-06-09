@@ -35,10 +35,6 @@ func (r *REST) createTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{"id": id})
 }
 
-type getTodoInput struct {
-	todoID int `binding:"required"`
-}
-
 func (r *REST) getTodo(c *gin.Context) {
 	todoIDParam := c.Param("id")
 	if todoIDParam == "" {

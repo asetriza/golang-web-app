@@ -7,8 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const headerXRequestID = "X-Request-ID"
-
 type REST struct {
 	Service      *service.Service
 	TokenManager auth.TokenManager
