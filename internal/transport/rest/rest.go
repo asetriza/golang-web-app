@@ -1,6 +1,9 @@
 package rest
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/asetriza/golang-web-app/internal/service"
 	"github.com/asetriza/golang-web-app/pkg/auth"
 
@@ -48,4 +51,18 @@ func (r *REST) Router() *gin.Engine {
 	}
 
 	return router
+}
+
+func parseIdFromPath(c *gin.Context) (int, error) {
+	idParam := c.Param("id")
+	if idParam == "" {
+		return 0, errors.New("empty id param")
+	}
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		return 0, errors.New("id param must be int")
+	}
+
+	return id, nil
 }

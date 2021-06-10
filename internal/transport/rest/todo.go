@@ -3,7 +3,6 @@ package rest
 import (
 	"database/sql"
 	"net/http"
-	"strconv"
 
 	"github.com/asetriza/golang-web-app/internal/common"
 	"github.com/asetriza/golang-web-app/internal/service"
@@ -36,13 +35,7 @@ func (r *REST) createTodo(c *gin.Context) {
 }
 
 func (r *REST) getTodo(c *gin.Context) {
-	todoIDParam := c.Param("id")
-	if todoIDParam == "" {
-		newErrorResponce(c, http.StatusBadRequest, "empty id param")
-		return
-	}
-
-	todoID, err := strconv.Atoi(todoIDParam)
+	todoID, err := parseIdFromPath(c)
 	if err != nil {
 		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
 		return
@@ -98,20 +91,13 @@ func (r *REST) getTodos(c *gin.Context) {
 }
 
 func (r *REST) updateTodo(c *gin.Context) {
-	var input common.Todo
-
-	todoIDParam := c.Param("id")
-	if todoIDParam == "" {
-		newErrorResponce(c, http.StatusBadRequest, "empty id param")
-		return
-	}
-
-	todoID, err := strconv.Atoi(todoIDParam)
+	todoID, err := parseIdFromPath(c)
 	if err != nil {
 		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
 		return
 	}
 
+	var input common.Todo
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponce(c, http.StatusBadRequest, err.Error())
 		return
@@ -145,13 +131,7 @@ func (r *REST) updateTodo(c *gin.Context) {
 }
 
 func (r *REST) deleteTodo(c *gin.Context) {
-	todoIDParam := c.Param("id")
-	if todoIDParam == "" {
-		newErrorResponce(c, http.StatusBadRequest, "empty id param")
-		return
-	}
-
-	todoID, err := strconv.Atoi(todoIDParam)
+	todoID, err := parseIdFromPath(c)
 	if err != nil {
 		newErrorResponce(c, http.StatusBadRequest, "id param must be int")
 		return
