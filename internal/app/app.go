@@ -1,9 +1,15 @@
 package app
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/asetriza/golang-web-app/internal/repository"
 	"github.com/asetriza/golang-web-app/internal/server"
@@ -51,7 +57,27 @@ func Run() error {
 
 	srv := server.NewServer(os.Getenv("PORT"), REST.Router())
 
-	if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
+	go func() {
+		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
+			log.Println(err)
+		}
+	}()
+
+	log.Println("Server started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	const timeout = 5 * time.Second
+	ctx, shutdown := context.WithTimeout(context.Background(), timeout)
+	defer shutdown()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		return fmt.Errorf("failed to stop server: %v", err)
+	}
+
+	if err := conn.Close(); err != nil {
 		return err
 	}
 
