@@ -18,6 +18,7 @@ const (
 	authorizationHeader = "Authorization"
 	userCtx             = "userId"
 	infoCtx             = "info"
+	sessionIDKey        = "userIDKey"
 	requestIDKey        = "requestIDKey"
 	userIDKey           = "userIDKey"
 )
@@ -87,19 +88,24 @@ func logRequest(c *gin.Context) string {
 	return infoString
 }
 
-func SetRqIDToCtx(c *gin.Context) {
+func setRqIDToCtx(c *gin.Context) {
 	c.Set(requestIDKey, uuid.Create())
+}
+
+func setSnIDToCtx(c *gin.Context, snID string) {
+	c.Set(sessionIDKey, snID)
 }
 
 func loggerMiddleware(c *gin.Context) {
 	ctx := WithInfo(c.Request.Context(), logRequest(c))
 	ctx1 := WithRqID(ctx, getRqIDFromCtx(c))
+	ctx2 := WithSnID(ctx1, getSnIDFromCtx(c))
 	userID, err := getUserIDFromCtx(c)
 	if err != nil {
 		userID = -1
 	}
-	ctx2 := WithUserID(ctx1, userID)
-	logMw(ctx2)
+	ctx3 := WithUserID(ctx2, userID)
+	logMw(ctx3)
 }
 
 func logMw(ctx context.Context) {
@@ -164,6 +170,20 @@ func getRqIDFromCtx(c *gin.Context) string {
 	}
 
 	return rqID
+}
+
+func getSnIDFromCtx(c *gin.Context) string {
+	ctxSnIDFromCtx, ok := c.Get(sessionIDKey)
+	if !ok {
+		log.Println("snCtx not found")
+	}
+
+	snID, ok := ctxSnIDFromCtx.(string)
+	if !ok {
+		log.Println("snCtx is invalid type")
+	}
+
+	return snID
 }
 
 func getInfoFromCtx(c *gin.Context) string {

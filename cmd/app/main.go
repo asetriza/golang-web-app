@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/asetriza/golang-web-app/internal/app"
 	"log"
+
+	"github.com/asetriza/golang-web-app/internal/app"
 )
 
 func main() {

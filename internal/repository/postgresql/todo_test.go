@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -87,12 +86,10 @@ func TestTodoRepository_Create(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.Create(context.Background(), tc.user)
 			if (err != nil) != tc.wantErr {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && got != tc.want {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 			}
 		})
@@ -173,12 +170,10 @@ func TestAuthorizationRepository_GetAll(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.GetAll(context.Background(), tc.userID, tc.pagination.CalculateOffset())
 			if (err != nil) != tc.wantErr {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tc.want) {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 				return
 			}
@@ -247,12 +242,10 @@ func TestAuthorizationRepository_Get(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.Get(context.Background(), tc.userID, tc.todoID)
 			if (err != nil) != tc.wantErr {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tc.want) {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 				return
 			}
@@ -334,7 +327,6 @@ func TestAuthorizationRepository_Delete(t *testing.T) {
 			tc.mock()
 			err := tc.r.Delete(context.Background(), tc.userID, tc.todoID)
 			if (err != nil) != tc.wantErr {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
@@ -439,7 +431,6 @@ func TestAuthorizationRepository_Update(t *testing.T) {
 			tc.mock()
 			err := tc.r.Update(context.Background(), tc.todo)
 			if (err != nil) != tc.wantErr {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
@@ -498,12 +489,10 @@ func TestAuthorizationRepository_GetUserIDFromTodo(t *testing.T) {
 			tc.mock()
 			got, err := tc.r.GetUserIDFromTodo(context.Background(), tc.todoID)
 			if (err != nil) != tc.wantErr {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() error new = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tc.want) {
-				fmt.Println("test case name:", tc.name)
 				t.Errorf("Get() = %v, want %v", got, tc.want)
 				return
 			}

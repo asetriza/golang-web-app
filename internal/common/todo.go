@@ -10,9 +10,5 @@ type Todo struct {
 }
 
 func (t *Todo) IsOwner(userID int) bool {
-	if t.UserID == userID {
-		return true
-	}
-
-	return false
+	return t.UserID == userID
 }

@@ -1,13 +1,14 @@
 package rest
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/asetriza/golang-web-app/internal/service"
 	"github.com/asetriza/golang-web-app/pkg/auth"
 
 	"github.com/gin-gonic/gin"
 )
-
-const headerXRequestID = "X-Request-ID"
 
 type REST struct {
 	Service      *service.Service
@@ -24,7 +25,7 @@ func NewREST(s *service.Service, tm auth.TokenManager) *REST {
 func (r *REST) Router() *gin.Engine {
 	router := gin.New()
 	router.Use(
-		SetRqIDToCtx,
+		setRqIDToCtx,
 		loggerMiddleware,
 		gin.Recovery(),
 		corsMiddleware,
@@ -50,4 +51,18 @@ func (r *REST) Router() *gin.Engine {
 	}
 
 	return router
+}
+
+func parseIdFromPath(c *gin.Context) (int, error) {
+	idParam := c.Param("id")
+	if idParam == "" {
+		return 0, errors.New("empty id param")
+	}
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		return 0, errors.New("id param must be int")
+	}
+
+	return id, nil
 }
